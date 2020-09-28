@@ -1,0 +1,9 @@
+Test data information, use for successfull circle detection
+
+dice1.png : the radius of the circles on the image equals 29px.
+
+dice2.png : the radius is 29px (also, avoid setting the minimum radius to a very small value, <5 e.g. , because of the low image quality)
+
+dice3.png : the radius is 42px
+
+dice4.png : the radius is 27px (same sa dice2.png, avoid small values for minimum radius)
