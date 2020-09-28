@@ -45,6 +45,7 @@ static int cht_remove(struct platform_device *pdev);
 static irqreturn_t dma_isr(int irq,void*dev_id);
 int dma_init(void __iomem *base_address);
 u32 dma_simple_write(dma_addr_t TxBufferPtr, u32 max_pkt_len, void __iomem *base_address); 
+u32 dma_simple_read(dma_addr_t RxBufferPtr, u32 max_pkt_len, void __iomem *base_address); 
 
 //*********************GLOBAL VARIABLES*************************************
 struct cht_info {
@@ -131,7 +132,7 @@ static int cht_probe(struct platform_device *pdev)
 		rc = -EBUSY;
 		goto error1;
 	}    
-	// Remap phisical to virtual adresses
+	// Remap physical to virtual adresses
 
 	vp->base_addr = ioremap(vp->mem_start, vp->mem_end - vp->mem_start + 1);
 	if (!vp->base_addr) {
@@ -301,18 +302,23 @@ int dma_init(void __iomem *base_address)
 	IOC_IRQ_EN = 1 << 12; // this is IOC_IrqEn bit in MM2S_DMACR register
 	ERR_IRQ_EN = 1 << 14; // this is Err_IrqEn bit in MM2S_DMACR register
 
+	//Configuring the MM2S_DMACR register
 	iowrite32(reset, base_address); // writing to MM2S_DMACR register. Seting reset bit (3. bit)
 
 	MM2S_DMACR_reg = ioread32(base_address); // Reading from MM2S_DMACR register inside DMA
-	en_interrupt = MM2S_DMACR_reg | IOC_IRQ_EN | ERR_IRQ_EN;// seting 13. and 15.th bit in MM2S_DMACR
+	en_interrupt = MM2S_DMACR_reg | IOC_IRQ_EN | ERR_IRQ_EN;// seting 13. and 15. bit in MM2S_DMACR
 	iowrite32(en_interrupt, base_address); // writing to MM2S_DMACR register  
+
+	//Setting the reset bit of S2MM_DMACR register
+	iowrite32(0x1, base_address + 52);
 	return 0;
 }
 
+//Confguration of MM2S channel
 u32 dma_simple_write(dma_addr_t TxBufferPtr, u32 max_pkt_len, void __iomem *base_address) {
 	u32 MM2S_DMACR_reg;
 
-	MM2S_DMACR_reg = ioread32(base_address); // READ from MM2S_DMACR register
+	MM2S_DMACR_reg = ioread32(base_address); // reading the current configuration from MM2S_DMACR register
 
 	iowrite32(0x1 |  MM2S_DMACR_reg, base_address); // set RS bit in MM2S_DMACR register (this bit starts the DMA)
 
@@ -324,6 +330,21 @@ u32 dma_simple_write(dma_addr_t TxBufferPtr, u32 max_pkt_len, void __iomem *base
 	return 0;
 }
 
+//Configuration of S2MM channel
+u32 dma_simple_read(dma_addr_t RxBufferPtr, u32 max_pkt_len, void __iomem *base_address)
+{
+	u32 S2MM_DMACR_reg;
+
+	S2MM_DMACR_reg = ioread32(base_address); //reading the current configuration of S2MM_DMACR register
+
+	iowrite32(0x1 | S2MM_DMACR_reg, base address + 48); //setting the RS bit of S2MM_DMACR register
+
+	iowrite32((u32)RxBufferPtr, base_address + 72); //setting the S2MM_DA register
+
+	iowrite32(max_pkt_len, base_address + 88); //Setting the S2MM_LENGTH register
+
+	return 0;
+}
 
 
 //***************************************************

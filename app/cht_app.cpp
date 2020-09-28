@@ -86,6 +86,15 @@ int main(int argc, char** argv) {
   for(unsigned int r = r_min; r <= r_max; r++) {
     acc = CalcAccumulator(edge, r);
     cout << "CALC ACCUMULATOR PASSED" << endl;
+
+  //Closing the driver
+  close(fd);
+  if(fd < 0)
+  {
+    cout << "Cannot close /dev/dma driver" << endl;
+    return -1;
+  }
+
     //find the global maximum of the acc. matrix
     max_el = MatGlobalMax(acc);
     cout << "Max. element of accumulator matrix for r = " << r << " is " << max_el << endl;
@@ -204,7 +213,8 @@ Mat CalcAccumulator(Mat matrix, unsigned int r) {
 
   //Determining the number of white pixels
   for(int y = 0; y < height; y++) 
-    for(int x = 0; x < width; x++) 
+    for(int x = 0; x < width; x++)
+      //Check if the pixel is black 
       if(matrix.at<uchar>(y,x) != 0) 
         numw ++; //Number of white pixels
 
@@ -213,7 +223,6 @@ Mat CalcAccumulator(Mat matrix, unsigned int r) {
 
   for(int y = 0; y < height; y++) {
     for(int x = 0; x < width; x++) {
-      //Check if the pixel is black, to avoid unnecessary computation
       if(matrix.at<uchar>(y,x) != 0) {
         //First 10 bits represent x location of white pixel
         //Second 10 bits represent y location of white pixel
@@ -232,13 +241,6 @@ Mat CalcAccumulator(Mat matrix, unsigned int r) {
   memcpy(p, dma_seq, length);
   //Deleting the mappings for the specified address range
   munmap(p, length);
-
-  close(fd);
-  if(fd < 0)
-  {
-    cout << "Cannot close /dev/dma driver" << endl;
-    return -1;
-  }
 
   cout << "Finished accumulator matrix for r = " << r << endl;
   return acc;
