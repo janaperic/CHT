@@ -213,43 +213,8 @@ static ssize_t cht_read(struct file *f, char __user *buf, size_t len, loff_t *of
 
 static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, loff_t *off)
 {	
-	char buff[BUFF_SIZE];
-	int ret = 0;
-	unsigned int xpos=0,ypos=0;
-	unsigned long long rgb=0;
-	unsigned char rgb_buff[10];  
-	ret = copy_from_user(buff, buf, length);  
-	if(ret){
-		printk("copy from user failed \n");
-		return -EFAULT;
-	}  
-	buff[length] = '\0';
-
-
-	sscanf(buff,"%d,%d,%s", &xpos, &ypos, rgb_buff);  
-	ret = kstrtoull(rgb_buff, 0, &rgb);
-
-	if(ret != -EINVAL) //checking for parsing error
-	{
-		if (xpos > 639)
-		{
-			printk(KERN_WARNING "CHT_write: X_axis position exceeded, maximum is 639 and minimum 0 \n");
-		}
-		else if (ypos > 479)
-		{
-			printk(KERN_WARNING "CHT_write: Y_axis position exceeded, maximum is 479 and minimum 0 \n");
-		}
-		else
-		{
-			tx_vir_buffer[640*ypos + xpos] = (u32)rgb;
-		}
-	}
-	else
-	{
-		printk(KERN_WARNING "CHT_write: Wrong write format, expected \"xpos,ypos,rgb\"\n");
-		// return -EINVAL; //parsing error
-	}        
-	return length;
+	//printk("cht write\n");
+	return 0;
 
 }
 
@@ -294,23 +259,23 @@ static irqreturn_t dma_isr(int irq,void*dev_id)
 int dma_init(void __iomem *base_address)
 {
 	u32 reset = 0x00000004;
-	u32 IOC_IRQ_EN; 
-	u32 ERR_IRQ_EN;
-	u32 MM2S_DMACR_reg;
+	u32 IOC_IRQ_EN_S2MM; 
+	u32 ERR_IRQ_EN_S2MM;
+	u32 S2MM_DMACR_reg;
 	u32 en_interrupt;
 
-	IOC_IRQ_EN = 1 << 12; // this is IOC_IrqEn bit in MM2S_DMACR register
-	ERR_IRQ_EN = 1 << 14; // this is Err_IrqEn bit in MM2S_DMACR register
+	//Configuring the reset bit in MM2S channel
+	iowrite32(reset, base_address); // writing to MM2S_DMACR register. Seting reset bit (3. bit)  
 
-	//Configuring the MM2S_DMACR register
-	iowrite32(reset, base_address); // writing to MM2S_DMACR register. Seting reset bit (3. bit)
-
-	MM2S_DMACR_reg = ioread32(base_address); // Reading from MM2S_DMACR register inside DMA
-	en_interrupt = MM2S_DMACR_reg | IOC_IRQ_EN | ERR_IRQ_EN;// seting 13. and 15. bit in MM2S_DMACR
-	iowrite32(en_interrupt, base_address); // writing to MM2S_DMACR register  
-
-	//Setting the reset bit of S2MM_DMACR register
+	//Configuring the reset bit and interrupt in S2MM channel
 	iowrite32(0x1, base_address + 52);
+
+	S2MM_DMACR_reg=ioread32(base_address);
+	IOC_IRQ_EN_S2MM = 1 << (48 + 12); // this is IOC_IrqEn bit in S2MM_DMACR register
+	ERR_IRQ_EN_S2MM = 1 << (48 + 14); // this is Err_IrqEn bit in S2MM_DMACR register
+	en_interrupt = S2MM_DMACR_reg | IOC_IRQ_EN_S2MM | ERR_IRQ_EN_S2MM;
+	iowrite32(en_interrupt, base_address);
+
 	return 0;
 }
 
@@ -334,10 +299,13 @@ u32 dma_simple_write(dma_addr_t TxBufferPtr, u32 max_pkt_len, void __iomem *base
 u32 dma_simple_read(dma_addr_t RxBufferPtr, u32 max_pkt_len, void __iomem *base_address)
 {
 	u32 S2MM_DMACR_reg;
+	u32 RS_bit;
+
+	RS_bit = 1 << 48;
 
 	S2MM_DMACR_reg = ioread32(base_address); //reading the current configuration of S2MM_DMACR register
 
-	iowrite32(0x1 | S2MM_DMACR_reg, base address + 48); //setting the RS bit of S2MM_DMACR register
+	iowrite32(RS_bit | S2MM_DMACR_reg, base address); //setting the RS bit of S2MM_DMACR register
 
 	iowrite32((u32)RxBufferPtr, base_address + 72); //setting the S2MM_DA register
 
