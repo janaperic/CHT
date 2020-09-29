@@ -73,13 +73,9 @@ static struct file_operations my_fops =
 
 //Struct used for matching a device
 static struct of_device_id cht_of_match[] = {
+	{ .compatible = "cht_dma", },
 	{ .compatible = "xlnx,axi-dma-mm2s-channel", },
 	{ .compatible = "xlnx,axi-dma-s2mm-channel", },
-///////////// GENERIŠI PONOVO FAJLOVE I PROMENI system-user.dtsi
-	//{ .compatible = "cht"}, 
-	{ .compatible = "xlnx,axi-dma-7.1", },
-	{ .compatible = "xlnx,axi-dma-1.00.a", },
-
 	{ /* end of list */ },
 };
 MODULE_DEVICE_TABLE(of, cht_of_match);
@@ -181,7 +177,8 @@ static int cht_remove(struct platform_device *pdev)
 	u32 reset = 0x00000004;
 	// writing to MM2S_DMACR and SS2M_DMACR registers
 	printk(KERN_INFO "cht_probe: resseting");
-	iowrite32(reset | (1 << 52), vp->base_addr); 
+	iowrite32(reset, vp->base_addr); 
+	iowrite32(0x1, vp->base_addr + 52);
 
 	free_irq(vp->irq_num, NULL);
 	iounmap(vp->base_addr);
