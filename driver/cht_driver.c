@@ -178,10 +178,10 @@ error1:
 
 static int cht_remove(struct platform_device *pdev)
 {
-	u32 reset = 0x00000004 | (1 << 52);
+	u32 reset = 0x00000004;
 	// writing to MM2S_DMACR and SS2M_DMACR registers
 	printk(KERN_INFO "cht_probe: resseting");
-	iowrite32(reset, vp->base_addr); 
+	iowrite32(reset | (1 << 52), vp->base_addr); 
 
 	free_irq(vp->irq_num, NULL);
 	iounmap(vp->base_addr);
@@ -261,7 +261,6 @@ int dma_init(void __iomem *base_address)
 	u32 reset = 0x00000004;
 	u32 IOC_IRQ_EN_S2MM; 
 	u32 ERR_IRQ_EN_S2MM;
-	u32 S2MM_DMACR_reg;
 	u32 en_interrupt;
 
 	//Configuring the reset bit in MM2S channel
@@ -270,11 +269,10 @@ int dma_init(void __iomem *base_address)
 	//Configuring the reset bit and interrupt in S2MM channel
 	iowrite32(0x1, base_address + 52);
 
-	S2MM_DMACR_reg=ioread32(base_address);
-	IOC_IRQ_EN_S2MM = 1 << (48 + 12); // this is IOC_IrqEn bit in S2MM_DMACR register
-	ERR_IRQ_EN_S2MM = 1 << (48 + 14); // this is Err_IrqEn bit in S2MM_DMACR register
-	en_interrupt = S2MM_DMACR_reg | IOC_IRQ_EN_S2MM | ERR_IRQ_EN_S2MM;
-	iowrite32(en_interrupt, base_address);
+	IOC_IRQ_EN_S2MM = 1 << 12; // this is IOC_IrqEn bit in S2MM_DMACR register
+	ERR_IRQ_EN_S2MM = 1 << 14; // this is Err_IrqEn bit in S2MM_DMACR register
+	en_interrupt = IOC_IRQ_EN_S2MM | ERR_IRQ_EN_S2MM;
+	iowrite32(en_interrupt, base_address + 48);
 
 	return 0;
 }
@@ -298,14 +296,8 @@ u32 dma_simple_write(dma_addr_t TxBufferPtr, u32 max_pkt_len, void __iomem *base
 //Configuration of S2MM channel
 u32 dma_simple_read(dma_addr_t RxBufferPtr, u32 max_pkt_len, void __iomem *base_address)
 {
-	u32 S2MM_DMACR_reg;
-	u32 RS_bit;
 
-	RS_bit = 1 << 48;
-
-	S2MM_DMACR_reg = ioread32(base_address); //reading the current configuration of S2MM_DMACR register
-
-	iowrite32(RS_bit | S2MM_DMACR_reg, base address); //setting the RS bit of S2MM_DMACR register
+	iowrite32(0x1, base_address + 48); //setting the RS bit of S2MM_DMACR register
 
 	iowrite32((u32)RxBufferPtr, base_address + 72); //setting the S2MM_DA register
 
