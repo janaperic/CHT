@@ -176,7 +176,7 @@ static int cht_remove(struct platform_device *pdev)
 {
 	u32 reset = 0x00000004;
 	// writing to MM2S_DMACR and SS2M_DMACR registers
-	printk(KERN_INFO "cht_probe: resseting");
+	printk(KERN_INFO "cht_remove: reseting");
 	iowrite32(reset, vp->base_addr); 
 	iowrite32(0x1, vp->base_addr + 52);
 
@@ -184,7 +184,7 @@ static int cht_remove(struct platform_device *pdev)
 	iounmap(vp->base_addr);
 	release_mem_region(vp->mem_start, vp->mem_end - vp->mem_start + 1);
 	kfree(vp);
-	printk(KERN_INFO "cht_probe: CHT platform removed");
+	printk(KERN_INFO "cht_remove: CHT platform removed");
 	return 0;
 }
 
@@ -217,6 +217,7 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 
 static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 {
+	printk(KERN_NOTICE "cht_mmap: Inside\n");
 	int ret = 0;
 	long length = vma_s->vm_end - vma_s->vm_start;
 
@@ -242,6 +243,7 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 
 static irqreturn_t dma_isr(int irq,void*dev_id)
 {
+	printk(KERN_NOTICE "dma_isr: Inside\n");
 	u32 IrqStatus;  
 	/* Read pending interrupts */
 	IrqStatus = ioread32(vp->base_addr + 52);//read irq status from S2MM_DMASR register
@@ -255,6 +257,7 @@ static irqreturn_t dma_isr(int irq,void*dev_id)
 
 int dma_init(void __iomem *base_address)
 {
+	printk(KERN_NOTICE "dma_init: Inside\n");
 	u32 reset = 0x00000004;
 	u32 IOC_IRQ_EN_S2MM; 
 	u32 ERR_IRQ_EN_S2MM;
@@ -276,6 +279,7 @@ int dma_init(void __iomem *base_address)
 
 //Confguration of MM2S channel
 u32 dma_simple_write(dma_addr_t TxBufferPtr, u32 max_pkt_len, void __iomem *base_address) {
+	printk(KERN_NOTICE "dma_simple_write: Inside\n");
 	u32 MM2S_DMACR_reg;
 
 	MM2S_DMACR_reg = ioread32(base_address); // reading the current configuration from MM2S_DMACR register
@@ -293,7 +297,7 @@ u32 dma_simple_write(dma_addr_t TxBufferPtr, u32 max_pkt_len, void __iomem *base
 //Configuration of S2MM channel
 u32 dma_simple_read(dma_addr_t RxBufferPtr, u32 max_pkt_len, void __iomem *base_address)
 {
-
+	printk(KERN_NOTICE "dma_simple_read: Inside\n");
 	iowrite32(0x1, base_address + 48); //setting the RS bit of S2MM_DMACR register
 
 	iowrite32((u32)RxBufferPtr, base_address + 72); //setting the S2MM_DA register
