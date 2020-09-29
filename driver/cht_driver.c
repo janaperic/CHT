@@ -178,8 +178,8 @@ error1:
 
 static int cht_remove(struct platform_device *pdev)
 {
-	u32 reset = 0x00000004;
-	// writing to MM2S_DMACR register. Seting reset bit (3. bit)
+	u32 reset = 0x00000004 | (1 << 52);
+	// writing to MM2S_DMACR and SS2M_DMACR registers
 	printk(KERN_INFO "cht_probe: resseting");
 	iowrite32(reset, vp->base_addr); 
 
@@ -247,9 +247,9 @@ static irqreturn_t dma_isr(int irq,void*dev_id)
 {
 	u32 IrqStatus;  
 	/* Read pending interrupts */
-	IrqStatus = ioread32(vp->base_addr + 4);//read irq status from MM2S_DMASR register
-	iowrite32(IrqStatus | 0x00007000, vp->base_addr + 4);//clear irq status in MM2S_DMASR register
-	//(clearing is done by writing 1 on 13. bit in MM2S_DMASR (IOC_Irq)
+	IrqStatus = ioread32(vp->base_addr + 52);//read irq status from S2MM_DMASR register
+	iowrite32(IrqStatus | 0x00007000, vp->base_addr + 52);//clear irq status in S2MM_DMASR register
+	//(clearing is done by writing 1 on 13. bit in S2MM_DMASR (IOC_Irq)
 
 	/*Send a transaction*/
 	dma_simple_write(tx_phy_buffer, MAX_PKT_LEN, vp->base_addr); //My function that starts a DMA transaction
