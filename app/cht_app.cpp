@@ -2,6 +2,9 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 #include <math.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <fcntl.h>
 
 using namespace cv;
 using namespace std;
