@@ -53,15 +53,6 @@ int main(int argc, char** argv) {
     cout << "Example : ./cht ../data/filename.png" << endl;
     return -1;
   }
-
-  //Device driver initialisation
-  int fd;
-  fd = open("/dev/cht", O_RWDR|O_NDELAY);
-  if(fd < 0)
-  {
-    cout << "Cannot open driver /dev/cht" << endl;
-    return -1;
-  }
   
   cvtColor(img, gray, COLOR_BGR2GRAY); //grayscale conversion
   cout << "Made grayscale!" << endl;
@@ -89,14 +80,6 @@ int main(int argc, char** argv) {
   for(unsigned int r = r_min; r <= r_max; r++) {
     acc = CalcAccumulator(edge, r);
     cout << "CALC ACCUMULATOR PASSED" << endl;
-
-  //Closing the driver
-  close(fd);
-  if(fd < 0)
-  {
-    cout << "Cannot close /dev/dma driver" << endl;
-    return -1;
-  }
 
     //find the global maximum of the acc. matrix
     max_el = MatGlobalMax(acc);
@@ -210,6 +193,15 @@ Mat CalcAccumulator(Mat matrix, unsigned int r) {
   int a,b;
   int *p;
 
+  //Device driver initialisation
+  int fd;
+  fd = open("/dev/cht", O_RWDR|O_NDELAY);
+  if(fd < 0)
+  {
+    cout << "Cannot open driver /dev/cht" << endl;
+    return -1;
+  }
+
   cout << "HEIGHT : " << height << endl;
   cout << "WIDTH : " << width << endl;
   int numw = 0; 
@@ -246,6 +238,15 @@ Mat CalcAccumulator(Mat matrix, unsigned int r) {
   munmap(p, length);
 
   cout << "Finished accumulator matrix for r = " << r << endl;
+
+    //Closing the driver
+  close(fd);
+  if(fd < 0)
+  {
+    cout << "Cannot close /dev/dma driver" << endl;
+    return -1;
+  }
+
   return acc;
 }
 
