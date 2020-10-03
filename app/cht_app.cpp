@@ -10,7 +10,7 @@ using namespace cv;
 using namespace std;
 
 //function prototype for accumulator matrix calculation
-Mat CalcAccumulator(Mat matrix, int r);
+Mat CalcAccumulator(Mat matrix, unsigned int r);
 //function prototype for finding the global maximum in the matrix, with optional parameters
 //xm and ym for the coordinates of the global maximum
 int MatGlobalMax(Mat matrix);
