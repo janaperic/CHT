@@ -29,7 +29,7 @@ MODULE_ALIAS("custom:cht ip core driver");
 #define DRIVER_NAME "cht_driver"
 #define BUFF_SIZE 20
 /////////VELICINA?
-#define MAX_PKT_LEN 640*480*4
+#define MAX_PKT_LEN 300*300*4
 
 //*******************FUNCTION PROTOTYPES************************************
 static int cht_probe(struct platform_device *pdev);
@@ -220,7 +220,7 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 	printk(KERN_NOTICE "cht_mmap: Inside\n");
 	int ret = 0;
 	long length = vma_s->vm_end - vma_s->vm_start;
-	printk(KERN_NOTICE "Length: %l\n", length);
+	printk(KERN_NOTICE "Length: %li\n", length);
 
 	//printk(KERN_INFO "DMA TX Buffer is being memory mapped\n");
 
@@ -252,7 +252,7 @@ static irqreturn_t dma_isr(int irq,void*dev_id)
 	//(clearing is done by writing 1 on 13. bit in S2MM_DMASR (IOC_Irq)
 
 	/*Send a transaction*/
-	dma_simple_write(tx_phy_buffer, MAX_PKT_LEN, vp->base_adddmer); //My function that starts a DMA transaction
+	dma_simple_write(tx_phy_buffer, MAX_PKT_LEN, vp->base_addr); //My function that starts a DMA transaction
 	return IRQ_HANDLED;;
 }
 

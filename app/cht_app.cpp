@@ -228,7 +228,9 @@ Mat CalcAccumulator(Mat matrix, unsigned int r) {
   }
   dma_seq[0] = r | (1 << 31);
 
-  int length = (numw + 1) * 4; // Number of bytes that will be allocated
+
+  int length = 300*300*4;
+  //int length = (numw + 1) * 4; // Number of bytes that will be allocated
   //Creating a new mapping in the virtual address space of the calling process.
   p = (int*)mmap(0, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   //With memcpy() we are copying the values of numw bytes from the location 
