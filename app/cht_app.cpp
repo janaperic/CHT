@@ -195,11 +195,11 @@ Mat CalcAccumulator(Mat matrix, unsigned int r) {
 
   //Device driver initialisation
   int fd;
-  fd = open("/dev/cht", O_RWDR|O_NDELAY);
+  fd = open("/dev/cht", O_RDWR|O_NDELAY);
   if(fd < 0)
   {
     cout << "Cannot open driver /dev/cht" << endl;
-    return -1;
+    //return -1;
   }
 
   cout << "HEIGHT : " << height << endl;
@@ -247,6 +247,6 @@ Mat CalcAccumulator(Mat matrix, unsigned int r) {
     return -1;
   }
 
-  return acc;
+  //return acc;
 }
 
