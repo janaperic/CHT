@@ -249,20 +249,17 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw) {
   memcpy(tx, tx_buff, (numw + 1) * 4);
   memcpy(rx_buff, rx, numw * 360 * 4);
 
-  for(int i = 0; i < (numw * 360); i++)
+  for(int i = 0; i < (numw * 360 - 1); i++)
   {
-    a = rx_buff[i] & 1023; // first 10 bits
-    b = rx_buff[i] & 1047552; // second 10 bits
+    b = rx_buff[i] & 1023; // first 10 bits
+    a = rx_buff[i] & 1047552; // second 10 bits
 
     if(a < width && b < height && a >= 0 && b >= 0)
             acc.at<int>(b,a) += 1;
   }
-  
-
 
   cout << "Finished accumulator matrix for r = " << r << endl;
 
-  
   return acc;
 }
 
