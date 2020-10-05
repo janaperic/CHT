@@ -91,8 +91,8 @@ static struct platform_driver cht_driver = {
 };
 
 
-dma_addr_t tx_phy_buffer;
-u32 *tx_vir_buffer;
+dma_addr_t tx_phy_buffer, rx_phy_buffer;
+u32 *tx_vir_buffer, *rx_vir_buffer;
 
 //***************************************************************************
 // PROBE AND REMOVE
@@ -158,6 +158,7 @@ static int cht_probe(struct platform_device *pdev)
 	/* INIT DMA */
 	dma_init(vp->base_addr);
 	dma_simple_write(tx_phy_buffer, MAX_PKT_LEN, vp->base_addr); // helper function, defined later
+	dma_simple_read(rx_phy_buffer, MAX_PKT_LEN*360, vp->base_addr);
 
 	printk(KERN_NOTICE "cht_probe: CHT platform driver registered\n");
 	return 0;//ALL OK
@@ -218,7 +219,7 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 {
 	printk(KERN_NOTICE "cht_mmap: Inside\n");
-	int ret = 0;
+	int ret, val = 0;
 	long length = vma_s->vm_end - vma_s->vm_start;
 	printk(KERN_NOTICE "Length: %li\n", length);
 
@@ -233,8 +234,16 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 	ret = dma_mmap_coherent(NULL, vma_s, tx_vir_buffer, tx_phy_buffer, length);
 	if(ret<0)
 	{
-		printk(KERN_ERR "memory map failed\n");
+		printk(KERN_ERR "TX memory map failed\n");
 		return ret;
+	}
+	return 0;
+
+	val = dma_mmap_coherent(NULL, vma_s, rx_vir_buffer, rx_phy_buffer, length*360);
+	if(val<0)
+	{
+		printk(KERN_ERR "RX memory map failed\n");
+		return val;
 	}
 	return 0;
 }
@@ -354,13 +363,24 @@ static int __init cht_init(void)
 
 	tx_vir_buffer = dma_alloc_coherent(NULL, MAX_PKT_LEN, &tx_phy_buffer, GFP_DMA | GFP_KERNEL);
 	if(!tx_vir_buffer){
-		printk(KERN_ALERT "cht_init: Could not allocate dma_alloc_coherent for img");
+		printk(KERN_ALERT "cht_init: Could not allocate dma_alloc_coherent for tx buffer");
 		goto fail_3;
 	}
 	else
 		printk("cht_init: Successfully allocated memory for dma transaction buffer\n");
+
+	rx_vir_buffer = dma_alloc_coherent(NULL, MAX_PKT_LEN*360, &rx_phy_buffer, GFP_DMA | GFP_KERNEL);
+	if(!rx_vir_buffer){
+		printk(KERN_ALERT "cht_init: Could not allocate dma_alloc_coherent for rx buffer");
+		goto fail_3;
+	}
+	else
+		printk("cht_init: Successfully allocated memory for dma receive buffer\n");
+
 	for (i = 0; i < MAX_PKT_LEN/4;i++)
 		tx_vir_buffer[i] = 0x00000000;
+	for (i = 0; i < (MAX_PKT_LEN*360)/4;i++)
+		rx_vir_buffer[i] = 0x00000000;
 	printk(KERN_INFO "cht_init: DMA memory reset.\n");
 	return platform_driver_register(&cht_driver);
 
@@ -382,6 +402,8 @@ static void __exit cht_exit(void)
 	int i =0;
 	for (i = 0; i < MAX_PKT_LEN/4; i++) 
 		tx_vir_buffer[i] = 0x00000000;
+	for (i = 0; i < (MAX_PKT_LEN*360)/4;i++)
+		rx_vir_buffer[i] = 0x00000000;
 	printk(KERN_INFO "cht_exit: DMA memory reset\n");
 
 	// Exit Device Module
@@ -391,6 +413,7 @@ static void __exit cht_exit(void)
 	class_destroy(my_class);
 	unregister_chrdev_region(my_dev_id, 1);
 	dma_free_coherent(NULL, MAX_PKT_LEN, tx_vir_buffer, tx_phy_buffer);
+	dma_free_coherent(NULL, MAX_PKT_LEN*360, rx_vir_buffer, rx_phy_buffer);
 	printk(KERN_INFO "cht_exit: Exit device module finished\"%s\".\n", DEVICE_NAME);
 }
 

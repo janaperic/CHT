@@ -239,6 +239,7 @@ Mat CalcAccumulator(Mat matrix, unsigned int r) {
   munmap(p, length);
 
   cout << "Finished accumulator matrix for r = " << r << endl;
+  cout << "Number of white pixels = " << numw << endl;
 
     //Closing the driver
   close(fd);
@@ -247,8 +248,6 @@ Mat CalcAccumulator(Mat matrix, unsigned int r) {
     cout << "Cannot close /dev/dma driver" << endl;
     //return -1;
   }
-  cout << "Finished accumulator matrix for r = " << r << endl;
-  cout << "Number of white pixels = " << numw << endl;
   return acc;
 }
 
