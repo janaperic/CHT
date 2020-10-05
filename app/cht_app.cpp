@@ -94,10 +94,9 @@ int main(int argc, char** argv) {
         numw ++; //Number of white pixels
   cout << "Number of white pixels: " << numw << endl;
 
-  int length = (numw + 1) * 4; // Number of bytes that will be allocated
   //Creating a new mapping in the virtual address space of the calling process.
-  tx = (int*)mmap(0, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-  rx = (int*)mmap(0, length*360, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  tx = (int*)mmap(0, (numw + 1) * 4, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  rx = (int*)mmap(0, numw * 360 * 4, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
   //construct an accumulator matrix for every r in range(r_min, r_max)
   for(unsigned int r = r_min; r <= r_max; r++) {
