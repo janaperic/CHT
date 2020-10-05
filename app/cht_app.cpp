@@ -10,7 +10,7 @@ using namespace cv;
 using namespace std;
 
 //function prototype for accumulator matrix calculation
-Mat CalcAccumulator(Mat matrix, unsigned int r);
+Mat CalcAccumulator(Mat matrix, unsigned int r, int *p, int numw);
 //function prototype for finding the global maximum in the matrix, with optional parameters
 //xm and ym for the coordinates of the global maximum
 int MatGlobalMax(Mat matrix);
@@ -76,9 +76,30 @@ int main(int argc, char** argv) {
   Mat correct_acc(height, width, CV_32S);
   Mat acc(height, width, CV_32S);
 
+  int fd;
+  int numw = 0;
+  int *p;
+  //Device driver initialisation
+  fd = open("/dev/cht", O_RDWR|O_NDELAY);
+  if(fd < 0)
+  {
+    cout << "Cannot open driver /dev/cht" << endl;
+    //return -1;
+  }
+  //Determining the number of white pixels
+  for(int y = 0; y < height; y++) 
+    for(int x = 0; x < width; x++)
+      //Check if the pixel is black 
+      if(edge.at<uchar>(y,x) != 0) 
+        numw ++; //Number of white pixels
+
+  int length = (numw + 1) * 4; // Number of bytes that will be allocated
+  //Creating a new mapping in the virtual address space of the calling process.
+  p = (int*)mmap(0, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+
   //construct an accumulator matrix for every r in range(r_min, r_max)
   for(unsigned int r = r_min; r <= r_max; r++) {
-    acc = CalcAccumulator(edge, r);
+    acc = CalcAccumulator(edge, r, p, numw);
     cout << "CALC ACCUMULATOR PASSED" << endl;
 
     //find the global maximum of the acc. matrix
@@ -96,6 +117,14 @@ int main(int argc, char** argv) {
       det_radius = r;
     }
   }
+
+  //Closing the driver
+  close(fd);
+  if(fd < 0)
+  {
+    cout << "Cannot close /dev/dma driver" << endl;
+    //return -1;
+  } 
 
   cout << "--------------------------------------------------------" << endl;
   cout << "BEGINNING CIRCLE DETECTION" << endl;
@@ -185,33 +214,16 @@ int MatGlobalMax(Mat matrix) {
   return global_max;
 }
 
-Mat CalcAccumulator(Mat matrix, unsigned int r) {
+Mat CalcAccumulator(Mat matrix, unsigned int r, int *p, int numw) {
   //accumulator matrix, type CV_32S (i.e. int), intialized with zeros
   int height = matrix.rows;
   int width = matrix.cols;
   Mat acc = Mat::zeros(height, width, CV_32S);
   int a,b;
-  int *p;
 
-  //Device driver initialisation
-  int fd;
-  fd = open("/dev/cht", O_RDWR|O_NDELAY);
-  if(fd < 0)
-  {
-    cout << "Cannot open driver /dev/cht" << endl;
-    //return -1;
-  }
 
   cout << "HEIGHT : " << height << endl;
-  cout << "WIDTH : " << width << endl;
-  int numw = 0; 
-
-  //Determining the number of white pixels
-  for(int y = 0; y < height; y++) 
-    for(int x = 0; x < width; x++)
-      //Check if the pixel is black 
-      if(matrix.at<uchar>(y,x) != 0) 
-        numw ++; //Number of white pixels
+  cout << "WIDTH : " << width << endl; 
 
   int dma_seq[numw + 1];//Array of pixels that will be mapped to DMA (+1 because dma_seq[0] will hold radius value)
   int temp = 1;
@@ -228,10 +240,7 @@ Mat CalcAccumulator(Mat matrix, unsigned int r) {
   }
   dma_seq[0] = r | (1 << 31);
 
-
-  int length = (numw + 1) * 4; // Number of bytes that will be allocated
-  //Creating a new mapping in the virtual address space of the calling process.
-  p = (int*)mmap(0, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  int length = (numw + 1) * 4;
   //With memcpy() we are copying the values of numw bytes from the location 
   //pointed to by dma_seq directly to the memory block pointed to by p.
   memcpy(p, dma_seq, length);
@@ -241,13 +250,7 @@ Mat CalcAccumulator(Mat matrix, unsigned int r) {
   cout << "Finished accumulator matrix for r = " << r << endl;
   cout << "Number of white pixels = " << numw << endl;
 
-    //Closing the driver
-  close(fd);
-  if(fd < 0)
-  {
-    cout << "Cannot close /dev/dma driver" << endl;
-    //return -1;
-  }
+  
   return acc;
 }
 
