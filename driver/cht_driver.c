@@ -29,7 +29,7 @@ MODULE_ALIAS("custom:cht ip core driver");
 #define DRIVER_NAME "cht_driver"
 #define BUFF_SIZE 20
 /////////VELICINA?
-#define MAX_PKT_LEN 900*500*4
+#define MAX_PKT_LEN 5000*4
 
 //*******************FUNCTION PROTOTYPES************************************
 static int cht_probe(struct platform_device *pdev);
@@ -218,13 +218,14 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 
 static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 {
+	int ret, val;
 	printk(KERN_NOTICE "cht_mmap: Inside\n");
-	int ret, val = 0;
 	long length = vma_s->vm_end - vma_s->vm_start;
 	printk(KERN_NOTICE "Length: %li\n", length);
 
 	//printk(KERN_INFO "DMA TX Buffer is being memory mapped\n");
-
+	ret = 0;
+	val = 0;
 	if(length > MAX_PKT_LEN)
 	{
 		return -EIO;
@@ -253,8 +254,8 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 
 static irqreturn_t dma_isr(int irq,void*dev_id)
 {
-	printk(KERN_NOTICE "dma_isr: Inside\n");
 	u32 IrqStatus;  
+	printk(KERN_NOTICE "dma_isr: Inside\n");
 	/* Read pending interrupts */
 	IrqStatus = ioread32(vp->base_addr + 52);//read irq status from S2MM_DMASR register
 	iowrite32(IrqStatus | 0x00007000, vp->base_addr + 52);//clear irq status in S2MM_DMASR register
@@ -267,11 +268,12 @@ static irqreturn_t dma_isr(int irq,void*dev_id)
 
 int dma_init(void __iomem *base_address)
 {
-	printk(KERN_NOTICE "dma_init: Inside\n");
-	u32 reset = 0x00000004;
+	u32 reset;
 	u32 IOC_IRQ_EN_S2MM; 
 	u32 ERR_IRQ_EN_S2MM;
 	u32 en_interrupt;
+	reset = 0x00000004;
+	printk(KERN_NOTICE "dma_init: Inside\n");
 
 	//Configuring the reset bit in MM2S channel
 	iowrite32(reset, base_address); // writing to MM2S_DMACR register. Seting reset bit (3. bit)  
@@ -289,8 +291,8 @@ int dma_init(void __iomem *base_address)
 
 //Confguration of MM2S channel
 u32 dma_simple_write(dma_addr_t TxBufferPtr, u32 max_pkt_len, void __iomem *base_address) {
-	printk(KERN_NOTICE "dma_simple_write: Inside\n");
 	u32 MM2S_DMACR_reg;
+	printk(KERN_NOTICE "dma_simple_write: Inside\n");
 
 	MM2S_DMACR_reg = ioread32(base_address); // reading the current configuration from MM2S_DMACR register
 
