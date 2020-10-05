@@ -29,7 +29,7 @@ MODULE_ALIAS("custom:cht ip core driver");
 #define DRIVER_NAME "cht_driver"
 #define BUFF_SIZE 20
 /////////VELICINA?
-#define MAX_PKT_LEN 5000*4
+#define MAX_PKT_LEN 1472*4
 
 //*******************FUNCTION PROTOTYPES************************************
 static int cht_probe(struct platform_device *pdev);
@@ -158,7 +158,7 @@ static int cht_probe(struct platform_device *pdev)
 	/* INIT DMA */
 	dma_init(vp->base_addr);
 	dma_simple_write(tx_phy_buffer, MAX_PKT_LEN, vp->base_addr); // helper function, defined later
-	dma_simple_read(rx_phy_buffer, MAX_PKT_LEN * 360, vp->base_addr);
+	dma_simple_read(rx_phy_buffer, (MAX_PKT_LEN - 1) * 360, vp->base_addr);
 
 	printk(KERN_NOTICE "cht_probe: CHT platform driver registered\n");
 	return 0;//ALL OK
@@ -226,11 +226,11 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 	//printk(KERN_INFO "DMA TX Buffer is being memory mapped\n");
 	ret = 0;
 	val = 0;
-	if(length > MAX_PKT_LEN)
+	/*if(length > MAX_PKT_LEN)
 	{
 		return -EIO;
 		printk(KERN_ERR "Trying to mmap more space than it's allocated\n");
-	}
+	}*/
 
 	ret = dma_mmap_coherent(NULL, vma_s, tx_vir_buffer, tx_phy_buffer, length);
 	if(ret<0)
@@ -375,7 +375,7 @@ static int __init cht_init(void)
 	else
 		printk("cht_init: Successfully allocated memory for dma transaction buffer\n");
 
-	rx_vir_buffer = dma_alloc_coherent(NULL, MAX_PKT_LEN * 360, &rx_phy_buffer, GFP_DMA | GFP_KERNEL);
+	rx_vir_buffer = dma_alloc_coherent(NULL, (MAX_PKT_LEN - 1) * 360, &rx_phy_buffer, GFP_DMA | GFP_KERNEL);
 	if(!rx_vir_buffer){
 		printk(KERN_ALERT "cht_init: Could not allocate dma_alloc_coherent for rx buffer");
 		goto fail_3;
@@ -385,7 +385,7 @@ static int __init cht_init(void)
 
 	for (i = 0; i < MAX_PKT_LEN/4;i++)
 		tx_vir_buffer[i] = 0x00000000;
-	for (i = 0; i < (MAX_PKT_LEN * 360)/4;i++)
+	for (i = 0; i < ((MAX_PKT_LEN - 1) * 360)/4;i++)
 		rx_vir_buffer[i] = 0x00000000;
 	printk(KERN_INFO "cht_init: DMA memory reset.\n");
 	return platform_driver_register(&cht_driver);
@@ -408,7 +408,7 @@ static void __exit cht_exit(void)
 	int i =0;
 	for (i = 0; i < MAX_PKT_LEN/4; i++) 
 		tx_vir_buffer[i] = 0x00000000;
-	for (i = 0; i < (MAX_PKT_LEN * 360)/4;i++)
+	for (i = 0; i < ((MAX_PKT_LEN - 1) * 360)/4;i++)
 		rx_vir_buffer[i] = 0x00000000;
 	printk(KERN_INFO "cht_exit: DMA memory reset\n");
 
@@ -419,7 +419,7 @@ static void __exit cht_exit(void)
 	class_destroy(my_class);
 	unregister_chrdev_region(my_dev_id, 1);
 	dma_free_coherent(NULL, MAX_PKT_LEN, tx_vir_buffer, tx_phy_buffer);
-	dma_free_coherent(NULL, MAX_PKT_LEN * 360, rx_vir_buffer, rx_phy_buffer);
+	dma_free_coherent(NULL, MAX_PKT_LEN - 1 * 360, rx_vir_buffer, rx_phy_buffer);
 	printk(KERN_INFO "cht_exit: Exit device module finished\"%s\".\n", DEVICE_NAME);
 }
 
