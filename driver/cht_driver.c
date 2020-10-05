@@ -219,8 +219,8 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 {
 	int ret, val;
-	printk(KERN_NOTICE "cht_mmap: Inside\n");
 	long length = vma_s->vm_end - vma_s->vm_start;
+	printk(KERN_NOTICE "cht_mmap: Inside\n");
 	printk(KERN_NOTICE "Length: %li\n", length);
 
 	//printk(KERN_INFO "DMA TX Buffer is being memory mapped\n");
@@ -263,27 +263,28 @@ static irqreturn_t dma_isr(int irq,void*dev_id)
 
 	/*Send a transaction*/
 	dma_simple_write(tx_phy_buffer, MAX_PKT_LEN, vp->base_addr); //My function that starts a DMA transaction
-	return IRQ_HANDLED;;
+	return IRQ_HANDLED;
 }
 
 int dma_init(void __iomem *base_address)
 {
-	u32 reset;
+	u32 reset = 0x00000004;
 	u32 IOC_IRQ_EN_S2MM; 
 	u32 ERR_IRQ_EN_S2MM;
 	u32 en_interrupt;
-	reset = 0x00000004;
+	u32 S2MM_DMACR_reg;
 	printk(KERN_NOTICE "dma_init: Inside\n");
 
 	//Configuring the reset bit in MM2S channel
 	iowrite32(reset, base_address); // writing to MM2S_DMACR register. Seting reset bit (3. bit)  
 
 	//Configuring the reset bit and interrupt in S2MM channel
-	iowrite32(0x1, base_address + 52);
+	S2MM_DMACR_reg = ioread32(base_address + 52);
+	iowrite32(0x1 | S2MM_DMACR_reg, base_address + 52);
 
 	IOC_IRQ_EN_S2MM = 1 << 12; // this is IOC_IrqEn bit in S2MM_DMACR register
 	ERR_IRQ_EN_S2MM = 1 << 14; // this is Err_IrqEn bit in S2MM_DMACR register
-	en_interrupt = IOC_IRQ_EN_S2MM | ERR_IRQ_EN_S2MM;
+	en_interrupt = S2MM_DMACR_reg | IOC_IRQ_EN_S2MM | ERR_IRQ_EN_S2MM;
 	iowrite32(en_interrupt, base_address + 48);
 
 	return 0;
