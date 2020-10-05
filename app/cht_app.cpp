@@ -125,8 +125,8 @@ int main(int argc, char** argv) {
   close(fd);
   if(fd < 0)
   {
-    cout << "Cannot close /dev/dma driver" << endl;
-    //return -1;
+    cout << "Cannot close /dev/cht_driver module" << endl;
+    return -1;
   } 
 
   cout << "--------------------------------------------------------" << endl;
