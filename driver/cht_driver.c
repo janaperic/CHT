@@ -310,8 +310,11 @@ u32 dma_simple_write(dma_addr_t TxBufferPtr, u32 max_pkt_len, void __iomem *base
 //Configuration of S2MM channel
 u32 dma_simple_read(dma_addr_t RxBufferPtr, u32 max_pkt_len, void __iomem *base_address)
 {
+	u32 S2MM_DMACR_reg;
 	printk(KERN_NOTICE "dma_simple_read: Inside\n");
-	iowrite32(0x1, base_address + 48); //setting the RS bit of S2MM_DMACR register
+
+	S2MM_DMACR_reg = ioread32(base_address + 48);
+	iowrite32(0x1 | S2MM_DMACR_reg, base_address + 48); //setting the RS bit of S2MM_DMACR register
 
 	iowrite32((u32)RxBufferPtr, base_address + 72); //setting the S2MM_DA register
 
