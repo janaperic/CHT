@@ -10,7 +10,7 @@ using namespace cv;
 using namespace std;
 
 //function prototype for accumulator matrix calculation
-Mat CalcAccumulator(Mat matrix, unsigned int r, int *p, int numw);
+Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw);
 //function prototype for finding the global maximum in the matrix, with optional parameters
 //xm and ym for the coordinates of the global maximum
 int MatGlobalMax(Mat matrix);
@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
 
   int fd;
   int numw = 0;
-  int *p;
+  int *tx, *rx;
   //Device driver initialisation
   fd = open("/dev/cht", O_RDWR|O_NDELAY);
   if(fd < 0)
@@ -95,11 +95,12 @@ int main(int argc, char** argv) {
 
   int length = (numw + 1) * 4; // Number of bytes that will be allocated
   //Creating a new mapping in the virtual address space of the calling process.
-  p = (int*)mmap(0, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  tx = (int*)mmap(0, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  rx = (int*)mmap(0, length*360, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
   //construct an accumulator matrix for every r in range(r_min, r_max)
   for(unsigned int r = r_min; r <= r_max; r++) {
-    acc = CalcAccumulator(edge, r, p, numw);
+    acc = CalcAccumulator(edge, r, tx, rx, numw);
     cout << "CALC ACCUMULATOR PASSED" << endl;
 
     //find the global maximum of the acc. matrix
@@ -214,7 +215,7 @@ int MatGlobalMax(Mat matrix) {
   return global_max;
 }
 
-Mat CalcAccumulator(Mat matrix, unsigned int r, int *p, int numw) {
+Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw) {
   //accumulator matrix, type CV_32S (i.e. int), intialized with zeros
   int height = matrix.rows;
   int width = matrix.cols;
@@ -225,7 +226,8 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *p, int numw) {
   cout << "HEIGHT : " << height << endl;
   cout << "WIDTH : " << width << endl; 
 
-  int dma_seq[numw + 1];//Array of pixels that will be mapped to DMA (+1 because dma_seq[0] will hold radius value)
+  int tx_buff[numw + 1];//Array of pixels that will be mapped to DMA (+1 because tx_buff[0] will hold radius value)
+  int rx_buff[numw * 360]; //Array of pixels that will be received
   int temp = 1;
 
   for(int y = 0; y < height; y++) {
@@ -233,19 +235,21 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *p, int numw) {
       if(matrix.at<uchar>(y,x) != 0) {
         //First 10 bits represent x location of white pixel
         //Second 10 bits represent y location of white pixel
-        dma_seq[temp] = x | (y << 10);
+        tx_buff[temp] = x | (y << 10);
         temp ++;
       }
     }
   }
-  dma_seq[0] = r | (1 << 31);
+  tx_buff[0] = r | (1 << 31);
 
   int length = (numw + 1) * 4;
   //With memcpy() we are copying the values of numw bytes from the location 
-  //pointed to by dma_seq directly to the memory block pointed to by p.
-  memcpy(p, dma_seq, length);
+  //pointed to by tx_buff directly to the memory block pointed to by p.
+  memcpy(tx, tx_buff, length);
   //Deleting the mappings for the specified address range
-  munmap(p, length);
+  munmap(tx, length);
+
+  memcpy(rx, rx_buff, numw * 360 * 4);
 
   cout << "Finished accumulator matrix for r = " << r << endl;
   cout << "Number of white pixels = " << numw << endl;
