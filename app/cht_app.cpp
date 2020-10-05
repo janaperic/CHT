@@ -249,7 +249,7 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw) {
   //Deleting the mappings for the specified address range
   munmap(tx, length);
 
-  memcpy(rx, rx_buff, numw * 360 * 4);
+  memcpy(rx_buff, rx, numw * 360 * 4);
 
   cout << "Finished accumulator matrix for r = " << r << endl;
   cout << "Number of white pixels = " << numw << endl;
