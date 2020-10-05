@@ -27,7 +27,6 @@ MODULE_ALIAS("custom:cht ip core driver");
 
 #define DEVICE_NAME "cht"
 #define DRIVER_NAME "cht_driver"
-#define BUFF_SIZE 20
 /////////VELICINA?
 #define TX_PKT_LEN 1472 * 4
 #define RX_PKT_LEN 1471 * 360 * 4
@@ -376,7 +375,7 @@ static int __init cht_init(void)
 	else
 		printk("cht_init: Successfully allocated memory for dma transaction buffer\n");
 
-	rx_vir_buffer = dma_alloc_coherent(NULL, (RX_PKT_LEN - 1) * 360, &rx_phy_buffer, GFP_DMA | GFP_KERNEL);
+	rx_vir_buffer = dma_alloc_coherent(NULL, RX_PKT_LEN, &rx_phy_buffer, GFP_DMA | GFP_KERNEL);
 	if(!rx_vir_buffer){
 		printk(KERN_ALERT "cht_init: Could not allocate dma_alloc_coherent for rx buffer");
 		goto fail_3;
