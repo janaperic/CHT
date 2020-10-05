@@ -239,13 +239,13 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 	}
 	return 0;
 
-	val = dma_mmap_coherent(NULL, vma_s, rx_vir_buffer, rx_phy_buffer, length);
+	/*val = dma_mmap_coherent(NULL, vma_s, rx_vir_buffer, rx_phy_buffer, length);
 	if(val<0)
 	{
 		printk(KERN_ERR "RX memory map failed\n");
 		return val;
 	}
-	return 0;
+	return 0;*/
 }
 
 /****************************************************/
@@ -369,18 +369,18 @@ static int __init cht_init(void)
 	else
 		printk("cht_init: Successfully allocated memory for dma transaction buffer\n");
 
-	rx_vir_buffer = dma_alloc_coherent(NULL, MAX_PKT_LEN, &rx_phy_buffer, GFP_DMA | GFP_KERNEL);
+	/*rx_vir_buffer = dma_alloc_coherent(NULL, MAX_PKT_LEN, &rx_phy_buffer, GFP_DMA | GFP_KERNEL);
 	if(!rx_vir_buffer){
 		printk(KERN_ALERT "cht_init: Could not allocate dma_alloc_coherent for rx buffer");
 		goto fail_3;
 	}
 	else
-		printk("cht_init: Successfully allocated memory for dma receive buffer\n");
+		printk("cht_init: Successfully allocated memory for dma receive buffer\n");*/
 
 	for (i = 0; i < MAX_PKT_LEN/4;i++)
 		tx_vir_buffer[i] = 0x00000000;
-	for (i = 0; i < (MAX_PKT_LEN)/4;i++)
-		rx_vir_buffer[i] = 0x00000000;
+	//for (i = 0; i < (MAX_PKT_LEN)/4;i++)
+	//	rx_vir_buffer[i] = 0x00000000;
 	printk(KERN_INFO "cht_init: DMA memory reset.\n");
 	return platform_driver_register(&cht_driver);
 
@@ -402,8 +402,8 @@ static void __exit cht_exit(void)
 	int i =0;
 	for (i = 0; i < MAX_PKT_LEN/4; i++) 
 		tx_vir_buffer[i] = 0x00000000;
-	for (i = 0; i < (MAX_PKT_LEN)/4;i++)
-		rx_vir_buffer[i] = 0x00000000;
+	//for (i = 0; i < (MAX_PKT_LEN)/4;i++)
+	//	rx_vir_buffer[i] = 0x00000000;
 	printk(KERN_INFO "cht_exit: DMA memory reset\n");
 
 	// Exit Device Module
@@ -413,7 +413,7 @@ static void __exit cht_exit(void)
 	class_destroy(my_class);
 	unregister_chrdev_region(my_dev_id, 1);
 	dma_free_coherent(NULL, MAX_PKT_LEN, tx_vir_buffer, tx_phy_buffer);
-	dma_free_coherent(NULL, MAX_PKT_LEN, rx_vir_buffer, rx_phy_buffer);
+	//dma_free_coherent(NULL, MAX_PKT_LEN, rx_vir_buffer, rx_phy_buffer);
 	printk(KERN_INFO "cht_exit: Exit device module finished\"%s\".\n", DEVICE_NAME);
 }
 
