@@ -118,7 +118,9 @@ int main(int argc, char** argv) {
       det_radius = r;
     }
   }
-
+  //Deleting the mappings for the specified address range
+  munmap(tx, (numw + 1) * 4);
+  munmap(rx, numw * 360 * 4);
   //Closing the driver
   close(fd);
   if(fd < 0)
@@ -242,17 +244,23 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw) {
   }
   tx_buff[0] = r | (1 << 31);
 
-  int length = (numw + 1) * 4;
   //With memcpy() we are copying the values of numw bytes from the location 
   //pointed to by tx_buff directly to the memory block pointed to by p.
-  memcpy(tx, tx_buff, length);
-  //Deleting the mappings for the specified address range
-  munmap(tx, length);
-
+  memcpy(tx, tx_buff, (numw + 1) * 4);
   memcpy(rx_buff, rx, numw * 360 * 4);
 
+  for(int i = 0; i < (numw * 360); i++)
+  {
+    a = rx_buff[i] & 1023; // first 10 bits
+    b = rx_buff[i] & 1047552; // second 10 bits
+
+    if(a < width && b < height && a >= 0 && b >= 0)
+            acc.at<int>(b,a) += 1;
+  }
+  
+
+
   cout << "Finished accumulator matrix for r = " << r << endl;
-  cout << "Number of white pixels = " << numw << endl;
 
   
   return acc;
