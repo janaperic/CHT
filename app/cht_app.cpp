@@ -92,6 +92,7 @@ int main(int argc, char** argv) {
       //Check if the pixel is black 
       if(edge.at<uchar>(y,x) != 0) 
         numw ++; //Number of white pixels
+  cout << "Number of white pixels: " << numw << endl;
 
   int length = (numw + 1) * 4; // Number of bytes that will be allocated
   //Creating a new mapping in the virtual address space of the calling process.
