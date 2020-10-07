@@ -258,7 +258,7 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int 
   {
     a = rx_buff[i] & 1023; // first 10 bits
     b = rx_buff[i] & 1047552; // second 10 bits
-    if(a < width && b < height && a >= 0 && b >= 0)
+    if(a < width && b < height && !(rx_buff[i] & (1 << 31)))
             acc.at<int>(b,a) += 1;
   }
 
