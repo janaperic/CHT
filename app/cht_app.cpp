@@ -266,10 +266,10 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int 
 
   int tmp = 0;
   for(int i = 0; i < ((numw * 360) - 1); i++)
-    if(a == 0 && b == 0)
+    if(rx_buff[i] == 0)
       tmp++;
 
-  cout << "both a & b are zeros: " << tmp << " times." << endl;
+  cout << "rx_buff is zero: " << tmp << " times." << endl;
 
 
   for(int i = 0; i < ((numw * 360) - 1); i++)
@@ -279,8 +279,6 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int 
     if(a < width && b < height && !(rx_buff[i] & (1 << 31)))
     {
       acc.at<int>(b,a) += 1;
-      //if(a == 0 && b == 0)
-        //cout << "rx_buff[i] = " << rx_buff[i] << endl;
     }
   }
 
