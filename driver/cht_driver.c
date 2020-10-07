@@ -213,14 +213,15 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 {	
 	printk("cht write: Start the transaction\n");
 
-	/*char buff;
-	int ret = 0;
+	char buff;
+	int ret = 0, numw = 0;
 	ret = copy_from_user(buff, buf, length);  
 	if(ret){
 		printk("copy from user failed \n");
 		return -EFAULT;
 	}  
-	printk("cht write: buf = %c\n", buff);*/
+	numw = (int)(buff);
+	printk("cht write: Number of white pixels = %d\n", numw);
 
 	dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr);
 	return 0;
