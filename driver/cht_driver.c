@@ -239,6 +239,7 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 	}
 	
 	dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr); 
+	printk(KERN_NOTICE "passed dma_simple_write\n");
 
 	val = dma_mmap_coherent(NULL, vma_s, rx_vir_buffer, rx_phy_buffer, length * 360);
 	if(val<0)
@@ -307,7 +308,7 @@ u32 dma_simple_write(dma_addr_t TxBufferPtr, u32 max_pkt_len, void __iomem *base
 	iowrite32((u32)TxBufferPtr, base_address + 24); // Write into MM2S_SA register the value of TxBufferPtr.
 	// With this, the DMA knows from where to start.
 	printk(KERN_NOTICE "flag3\n");
-	
+
 	iowrite32(max_pkt_len, base_address + 40); // Write into MM2S_LENGTH register. This is the length of a tranaction.
 	printk(KERN_NOTICE "flag4\n");
 	return 0;
