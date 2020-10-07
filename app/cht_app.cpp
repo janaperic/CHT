@@ -271,6 +271,8 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int 
     b = rx_buff[i] & 0xFFC00; // second 10 bits
     if(a < width && b < height && !(rx_buff[i] & (1 << 31)))
             acc.at<int>(b,a) += 1;
+    if(a == 0 && b == 0)
+      cout << "rx_buff[i] = " << rx_buff[i] << endl;
   }
 
   cout << "Finished accumulator matrix for r = " << r << endl;
