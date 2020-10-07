@@ -249,15 +249,15 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int 
   }
   tx_buff[0] = r | (1 << 31);
 
-  //char numw_string[100];
+  char start[5] = "1";
   //sprintf(numw_string, "%d", numw); //Convert numw to a string
 
   //With memcpy() we are copying the values of numw bytes from the location 
   //pointed to by tx_buff directly to the memory block pointed to by p.
   memcpy(tx, tx_buff, (numw + 1) * 4);
 
-  //Notify the driver that pixels have been copied, and send the number of white pixels
-  //write(fd, numw_string, sizeof(numw_string));
+  //Notify the driver that pixels have been copied
+  write(fd, start, sizeof(start));
 
   memcpy(rx_buff, rx, numw * 360 * 4);
 
