@@ -124,15 +124,15 @@ int main(int argc, char** argv) {
     }
   }
   //Deleting the mappings for the specified address range
-  munmap(tx, (numw + 1) * 4);
-  munmap(rx, numw * 360 * 4);
+  //munmap(tx, (numw + 1) * 4);
+  //munmap(rx, numw * 360 * 4);
   //Closing the driver
-  close(fd);
+  /*close(fd);
   if(fd < 0)
   {
     cout << "Cannot close /dev/cht module" << endl;
     return -1;
-  } 
+  } */
 
   cout << "--------------------------------------------------------" << endl;
   cout << "BEGINNING CIRCLE DETECTION" << endl;
@@ -196,6 +196,18 @@ int main(int argc, char** argv) {
   cout << "The radius of the circles in this figure is: " << det_radius << endl;
   cout << "Number of detected circles: " << num_circles << endl;
 
+//Deleting the mappings for the specified address range
+  munmap(tx, (numw + 1) * 4);
+  munmap(rx, numw * 360 * 4);
+  //Closing the driver
+  close(fd);
+  if(fd < 0)
+  {
+    cout << "Cannot close /dev/cht module" << endl;
+    return -1;
+  } 
+
+  
   namedWindow("circles", 1);
   imshow("circles", img);
 
