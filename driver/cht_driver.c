@@ -216,7 +216,7 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 
 }
 
-static ssize_t (struct file *f, struct vm_area_struct *vma_s)
+static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 {
 	int ret, val;
 	long length = vma_s->vm_end - vma_s->vm_start;
