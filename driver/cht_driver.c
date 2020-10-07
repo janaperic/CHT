@@ -211,9 +211,7 @@ static ssize_t cht_read(struct file *f, char __user *buf, size_t len, loff_t *of
 
 static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, loff_t *off)
 {	
-	printk("cht write: Start the transaction\n");
-
-	char buff;
+	char buff[100] = NULL;
 	int ret = 0, numw = 0;
 	ret = copy_from_user(buff, buf, length);  
 	if(ret){
@@ -223,6 +221,7 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 	numw = (int)(buff);
 	printk("cht write: Number of white pixels = %d\n", numw);
 
+	printk("cht write: Start the transaction\n");
 	dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr);
 	return 0;
 
