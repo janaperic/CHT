@@ -211,7 +211,17 @@ static ssize_t cht_read(struct file *f, char __user *buf, size_t len, loff_t *of
 
 static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, loff_t *off)
 {	
-	printk("cht write\n");
+	printk("cht write: Start the transaction\n");
+
+	char buff;
+	int ret = 0;
+	ret = copy_from_user(buff, buf, length);  
+	if(ret){
+		printk("copy from user failed \n");
+		return -EFAULT;
+	}  
+	printk("cht write: buf = %c\n", buff);
+
 	dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr);
 	return 0;
 
@@ -271,7 +281,7 @@ static irqreturn_t dma_isr(int irq,void*dev_id)
 	//(clearing is done by writing 1 on 13. bit in S2MM_DMASR (IOC_Irq)
 
 	/*Send a transaction*/
-	dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr); //My function that starts a DMA transaction
+	//dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr); //My function that starts a DMA transaction
 	return IRQ_HANDLED;
 }
 
