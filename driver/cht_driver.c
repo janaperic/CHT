@@ -256,7 +256,7 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 	else //if numw == 1, start the transaction
 	{
 		printk("cht write: Start the transaction\n");
-		printf("tx_vir_buffer[31] = %d\n", tx_vir_buffer[31]);
+		printk("tx_vir_buffer[31] = %d\n", tx_vir_buffer[31]);
 		dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr);
 	}
 
