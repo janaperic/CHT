@@ -238,7 +238,7 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 		printk(KERN_ERR "TX memory map failed\n");
 		return ret;
 	}
-	return 0;
+	
 	printk(KERN_INFO "flag1\n");
 	dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr); 
 
