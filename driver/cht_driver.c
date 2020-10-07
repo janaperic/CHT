@@ -246,6 +246,9 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 		printk(KERN_ERR "RX memory map failed\n");
 		return val;
 	}
+
+	dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr);
+	
 	return 0;
 }
 
@@ -261,8 +264,6 @@ static irqreturn_t dma_isr(int irq,void*dev_id)
 	iowrite32(IrqStatus | 0x00007000, vp->base_addr + 52);//clear irq status in S2MM_DMASR register
 	//(clearing is done by writing 1 on 13. bit in S2MM_DMASR (IOC_Irq)
 
-	/*Send a transaction*/
-	dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr); //My function that starts a DMA transaction
 	return IRQ_HANDLED;
 }
 

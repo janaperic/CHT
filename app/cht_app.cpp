@@ -247,6 +247,7 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw) {
   //With memcpy() we are copying the values of numw bytes from the location 
   //pointed to by tx_buff directly to the memory block pointed to by p.
   memcpy(tx, tx_buff, (numw + 1) * 4);
+  sleep(1)č
   memcpy(rx_buff, rx, numw * 360 * 4);
 
   for(int i = 0; i < ((numw * 360) - 1); i++)
