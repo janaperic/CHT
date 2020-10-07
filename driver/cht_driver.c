@@ -216,7 +216,7 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 
 }
 
-static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
+static ssize_t (struct file *f, struct vm_area_struct *vma_s)
 {
 	int ret, val;
 	long length = vma_s->vm_end - vma_s->vm_start;
@@ -239,7 +239,7 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 		return ret;
 	}
 	return 0;
-
+	printk(KERN_INFO "flag1\n");
 	dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr); 
 
 	val = dma_mmap_coherent(NULL, vma_s, rx_vir_buffer, rx_phy_buffer, length * 360);
@@ -249,6 +249,9 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 		return val;
 
 	}
+	printk(KERN_INFO "flag2\n");
+	dma_simple_read(rx_phy_buffer, RX_PKT_LEN, vp->base_addr);
+
 	return 0;
 }
 
