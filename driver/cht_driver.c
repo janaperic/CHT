@@ -221,7 +221,6 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 	int ret, val;
 	long length = vma_s->vm_end - vma_s->vm_start;
 	printk(KERN_NOTICE "cht_mmap: Inside\n");
-	printk(KERN_NOTICE "Length: %li\n", length);
 
 	//printk(KERN_INFO "DMA TX Buffer is being memory mapped\n");
 	ret = 0;
@@ -239,7 +238,6 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 		return ret;
 	}
 	
-	printk(KERN_INFO "flag1\n");
 	dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr); 
 
 	val = dma_mmap_coherent(NULL, vma_s, rx_vir_buffer, rx_phy_buffer, length * 360);
@@ -249,7 +247,6 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 		return val;
 
 	}
-	printk(KERN_INFO "flag2\n");
 	dma_simple_read(rx_phy_buffer, RX_PKT_LEN, vp->base_addr);
 
 	return 0;
@@ -302,14 +299,17 @@ u32 dma_simple_write(dma_addr_t TxBufferPtr, u32 max_pkt_len, void __iomem *base
 	printk(KERN_NOTICE "dma_simple_write: Inside\n");
 
 	MM2S_DMACR_reg = ioread32(base_address); // reading the current configuration from MM2S_DMACR register
+	printk(KERN_NOTICE "flag1\n");
 
 	iowrite32(0x1 |  MM2S_DMACR_reg, base_address); // set RS bit in MM2S_DMACR register (this bit starts the DMA)
+	printk(KERN_NOTICE "flag2\n");
 
 	iowrite32((u32)TxBufferPtr, base_address + 24); // Write into MM2S_SA register the value of TxBufferPtr.
 	// With this, the DMA knows from where to start.
-
+	printk(KERN_NOTICE "flag3\n");
+	
 	iowrite32(max_pkt_len, base_address + 40); // Write into MM2S_LENGTH register. This is the length of a tranaction.
-	// In our case this is the size of the image (640*480*4)
+	printk(KERN_NOTICE "flag4\n");
 	return 0;
 }
 
