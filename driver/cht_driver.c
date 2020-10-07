@@ -241,8 +241,6 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 			return ret;
 		}
 		
-		dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr); 
-		//printk(KERN_NOTICE "passed dma_simple_write\n");
 	}
 	else
 	{
@@ -253,8 +251,7 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 			return val;
 
 		}
-		dma_simple_read(rx_phy_buffer, RX_PKT_LEN, vp->base_addr);
-		//printk(KERN_NOTICE "passed dma_simple_read\n");
+	
 	}
 
 	return 0;
@@ -314,6 +311,8 @@ u32 dma_simple_write(dma_addr_t TxBufferPtr, u32 max_pkt_len, void __iomem *base
 	// With this, the DMA knows from where to start.
 
 	iowrite32(max_pkt_len, base_address + 40); // Write into MM2S_LENGTH register. This is the length of a tranaction.
+	
+	dma_simple_read(rx_phy_buffer, RX_PKT_LEN, vp->base_addr);
 	return 0;
 }
 
