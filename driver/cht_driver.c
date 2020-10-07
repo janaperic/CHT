@@ -42,7 +42,7 @@ static int __init cht_init(void);
 static void __exit cht_exit(void);
 static int cht_remove(struct platform_device *pdev);
 
-static irqreturn_t dma_isr(int irq,void*dev_id);
+static irqreturn_t dma_isr(int irq,void *dev_id);
 int dma_init(void __iomem *base_address);
 u32 dma_simple_write(dma_addr_t TxBufferPtr, u32 max_pkt_len, void __iomem *base_address); 
 u32 dma_simple_read(dma_addr_t RxBufferPtr, u32 max_pkt_len, void __iomem *base_address); 
@@ -241,14 +241,14 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 	dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr); 
 	printk(KERN_NOTICE "passed dma_simple_write\n");
 
-	val = dma_mmap_coherent(NULL, vma_s, rx_vir_buffer, rx_phy_buffer, length * 360);
+	/*val = dma_mmap_coherent(NULL, vma_s, rx_vir_buffer, rx_phy_buffer, length * 360);
 	if(val<0)
 	{
 		printk(KERN_ERR "RX memory map failed\n");
 		return val;
 
 	}
-	dma_simple_read(rx_phy_buffer, RX_PKT_LEN, vp->base_addr);
+	dma_simple_read(rx_phy_buffer, RX_PKT_LEN, vp->base_addr);*/
 
 	return 0;
 }

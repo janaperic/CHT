@@ -96,6 +96,7 @@ int main(int argc, char** argv) {
 
   //Creating a new mapping in the virtual address space of the calling process.
   tx = (int*)mmap(0, (numw + 1) * 4, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  cout << "TX mmap done" << endl;
   rx = (int*)mmap(0, numw * 360 * 4, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
   //construct an accumulator matrix for every r in range(r_min, r_max)
