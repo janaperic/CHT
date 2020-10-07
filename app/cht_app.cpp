@@ -200,8 +200,10 @@ int main(int argc, char** argv) {
   munmap(tx, (numw + 1) * 4);
   munmap(rx, numw * 360 * 4);
   //Closing the driver
-  close(fd);
-  if(fd < 0)
+  int ret 0;
+  ret = close(fd);
+  cout << "ret = " << ret << endl;
+  if(ret < 0)
   {
     cout << "Cannot close /dev/cht module" << endl;
     return -1;
