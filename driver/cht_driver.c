@@ -28,8 +28,8 @@ MODULE_ALIAS("custom:cht ip core driver");
 #define DEVICE_NAME "cht"
 #define DRIVER_NAME "cht_driver"
 /////////VELICINA?
-#define TX_PKT_LEN 1472 * 4
-#define RX_PKT_LEN 1471 * 360 * 4
+unsigned int TX_PKT_LEN //1472 * 4
+unsigned int RX_PKT_LEN //1471 * 360 * 4
 
 //*******************FUNCTION PROTOTYPES************************************
 static int cht_probe(struct platform_device *pdev);
@@ -218,8 +218,14 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 		printk("copy from user failed \n");
 		return -EFAULT;
 	}  
-	scanf(buff, "%d", &numw);
+	sscanf(buff, "%d", &numw);
 	printk("cht write: Number of white pixels = %d\n", numw);
+
+	TX_PKT_LEN = (numw + 1) * 4;
+	RX_PKT_LEN = numw * 360 * 4;
+
+	printk("cht write: TX_PKT_LEN = %d\n", TX_PKT_LEN);
+	printk("cht write: RX_PKT_LEN = %d\n", RX_PKT_LEN);
 
 	printk("cht write: Start the transaction\n");
 	dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr);
