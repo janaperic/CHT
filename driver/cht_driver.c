@@ -205,13 +205,13 @@ static int cht_close(struct inode *i, struct file *f)
 
 static ssize_t cht_read(struct file *f, char __user *buf, size_t len, loff_t *off)
 {
-	//printk("cht read\n");
+	printk("cht read\n");
 	return 0;
 }
 
 static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, loff_t *off)
 {	
-	//printk("cht write\n");
+	printk("cht write\n");
 	return 0;
 
 }
@@ -244,7 +244,7 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 	}
 	else
 	{
-		val = dma_mmap_coherent(NULL, vma_s, rx_vir_buffer, rx_phy_buffer, length * 360);
+		val = dma_mmap_coherent(NULL, vma_s, rx_vir_buffer, rx_phy_buffer, length);
 		if(val<0)
 		{
 			printk(KERN_ERR "RX memory map failed\n");

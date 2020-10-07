@@ -10,7 +10,7 @@ using namespace cv;
 using namespace std;
 
 //function prototype for accumulator matrix calculation
-Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw);
+Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int fd);
 //function prototype for finding the global maximum in the matrix, with optional parameters
 //xm and ym for the coordinates of the global maximum
 int MatGlobalMax(Mat matrix);
@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
 
   //construct an accumulator matrix for every r in range(r_min, r_max)
   for(unsigned int r = r_min; r <= r_max; r++) {
-    acc = CalcAccumulator(edge, r, tx, rx, numw);
+    acc = CalcAccumulator(edge, r, tx, rx, numw, fd);
     cout << "CALC ACCUMULATOR PASSED" << endl;
 
     //find the global maximum of the acc. matrix
@@ -217,7 +217,7 @@ int MatGlobalMax(Mat matrix) {
   return global_max;
 }
 
-Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw) {
+Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int fd) {
   //accumulator matrix, type CV_32S (i.e. int), intialized with zeros
   int height = matrix.rows;
   int width = matrix.cols;
@@ -244,9 +244,13 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw) {
   }
   tx_buff[0] = r | (1 << 31);
 
+  int buff[1];
+  buff[0] = numw;
+
   //With memcpy() we are copying the values of numw bytes from the location 
   //pointed to by tx_buff directly to the memory block pointed to by p.
   memcpy(tx, tx_buff, (numw + 1) * 4);
+  write(fd, buff, 1);
   sleep(1);
   memcpy(rx_buff, rx, numw * 360 * 4);
 
