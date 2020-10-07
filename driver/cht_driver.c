@@ -212,7 +212,8 @@ static ssize_t cht_read(struct file *f, char __user *buf, size_t len, loff_t *of
 static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, loff_t *off)
 {	
 	char buff[100] = "";
-	int ret = 0, numw = 0;
+	int ret = 0;
+	int numw = 0;
 	int i = 0;
 	ret = copy_from_user(buff, buf, length);  
 	if(ret){
@@ -236,7 +237,7 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 			goto fail_3;
 		}
 		else
-			printk("cht_init: Successfully allocated memory for dma transaction buffer\n");
+			printk("cht_init: Successfully allocated memory for dma transmit buffer\n");
 
 		rx_vir_buffer = dma_alloc_coherent(NULL, RX_PKT_LEN, &rx_phy_buffer, GFP_DMA | GFP_KERNEL);
 		if(!rx_vir_buffer){
@@ -255,6 +256,7 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 	else //if numw == 1, start the transaction
 	{
 		printk("cht write: Start the transaction\n");
+		printf("tx_vir_buffer[31] = %d\n", tx_vir_buffer[31]);
 		dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr);
 	}
 

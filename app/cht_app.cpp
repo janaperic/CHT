@@ -123,16 +123,6 @@ int main(int argc, char** argv) {
       det_radius = r;
     }
   }
-  //Deleting the mappings for the specified address range
-  //munmap(tx, (numw + 1) * 4);
-  //munmap(rx, numw * 360 * 4);
-  //Closing the driver
-  /*close(fd);
-  if(fd < 0)
-  {
-    cout << "Cannot close /dev/cht module" << endl;
-    return -1;
-  } */
 
   cout << "--------------------------------------------------------" << endl;
   cout << "BEGINNING CIRCLE DETECTION" << endl;
@@ -196,13 +186,13 @@ int main(int argc, char** argv) {
   cout << "The radius of the circles in this figure is: " << det_radius << endl;
   cout << "Number of detected circles: " << num_circles << endl;
 
-//Deleting the mappings for the specified address range
+  //Deleting the mappings for the specified address range
   munmap(tx, (numw + 1) * 4);
   munmap(rx, numw * 360 * 4);
+
   //Closing the driver
   int ret = 0;
   ret = close(fd);
-  cout << "ret = " << ret << endl;
   if(ret < 0)
   {
     cout << "Cannot close /dev/cht module" << endl;
@@ -263,11 +253,11 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int 
   }
   tx_buff[0] = r | (1 << 31);
 
-  int tmp1=0;
+  /*int tmp1=0;
   for(int j = 0; j <= numw; j++)
     if(tx_buff[j] == 0)
       tmp1 ++;
-  cout << "tx_buff is zero: " << tmp1 << " times." << endl;
+  cout << "tx_buff is zero: " << tmp1 << " times." << endl;*/
 
   char start[5] = "1";
 
@@ -283,12 +273,12 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int 
   //for(int i = 0; i < 5; i++)
    // cout << "rx_buff[i] = " << rx_buff[i] << endl;
 
-  int tmp = 0;
+  /*int tmp = 0;
   for(int i = 0; i < ((numw * 360) - 1); i++)
     if(rx_buff[i] == 0)
       tmp++;
 
-  cout << "rx_buff is zero: " << tmp << " times." << endl;
+  cout << "rx_buff is zero: " << tmp << " times." << endl;*/
 
 
   for(int i = 0; i < ((numw * 360) - 1); i++)
