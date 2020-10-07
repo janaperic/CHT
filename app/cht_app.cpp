@@ -80,10 +80,10 @@ int main(int argc, char** argv) {
   int numw = 0;
   int *tx, *rx;
   //Device driver initialisation
-  fd = open("/dev/cht_driver", O_RDWR|O_NDELAY);
+  fd = open("/dev/cht", O_RDWR|O_NDELAY);
   if(fd < 0)
   {
-    cout << "Cannot open /dev/cht_driver module" << endl;
+    cout << "Cannot open /dev/cht module" << endl;
     return -1;
   }
   //Determining the number of white pixels
@@ -125,7 +125,7 @@ int main(int argc, char** argv) {
   close(fd);
   if(fd < 0)
   {
-    cout << "Cannot close /dev/cht_driver module" << endl;
+    cout << "Cannot close /dev/cht module" << endl;
     return -1;
   } 
 

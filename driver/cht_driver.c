@@ -157,8 +157,8 @@ static int cht_probe(struct platform_device *pdev)
 
 	/* INIT DMA */
 	dma_init(vp->base_addr);
-	dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr); 
-	dma_simple_read(rx_phy_buffer, RX_PKT_LEN, vp->base_addr);
+	//dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr); 
+	//dma_simple_read(rx_phy_buffer, RX_PKT_LEN, vp->base_addr);
 
 	printk(KERN_NOTICE "cht_probe: CHT platform driver registered\n");
 	return 0;//ALL OK
@@ -240,11 +240,14 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 	}
 	return 0;
 
+	dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr); 
+
 	val = dma_mmap_coherent(NULL, vma_s, rx_vir_buffer, rx_phy_buffer, length * 360);
 	if(val<0)
 	{
 		printk(KERN_ERR "RX memory map failed\n");
 		return val;
+
 	}
 	return 0;
 }
