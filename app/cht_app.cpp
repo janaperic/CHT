@@ -251,7 +251,7 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int 
 
   int tmp1=0;
   for(int j = 0; j <= numw; j++)
-    if(tx_buff[i] == 0)
+    if(tx_buff[j] == 0)
       tmp1 ++;
   cout << "tx_buff is zero: " << tmp1 << " times." << endl;
 
