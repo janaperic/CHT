@@ -227,6 +227,28 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 	printk("cht write: TX_PKT_LEN = %d\n", TX_PKT_LEN);
 	printk("cht write: RX_PKT_LEN = %d\n", RX_PKT_LEN);
 
+	tx_vir_buffer = dma_alloc_coherent(NULL, TX_PKT_LEN, &tx_phy_buffer, GFP_DMA | GFP_KERNEL);
+	if(!tx_vir_buffer){
+		printk(KERN_ALERT "cht_init: Could not allocate dma_alloc_coherent for tx buffer");
+		goto fail_3;
+	}
+	else
+		printk("cht_init: Successfully allocated memory for dma transaction buffer\n");
+
+	rx_vir_buffer = dma_alloc_coherent(NULL, RX_PKT_LEN, &rx_phy_buffer, GFP_DMA | GFP_KERNEL);
+	if(!rx_vir_buffer){
+		printk(KERN_ALERT "cht_init: Could not allocate dma_alloc_coherent for rx buffer");
+		goto fail_3;
+	}
+	else
+		printk("cht_init: Successfully allocated memory for dma receive buffer\n");
+
+	for (i = 0; i < TX_PKT_LEN/4;i++)
+		tx_vir_buffer[i] = 0x00000000;
+	for (i = 0; i < RX_PKT_LEN/4;i++)
+		rx_vir_buffer[i] = 0x00000000;
+	printk(KERN_INFO "cht_init: DMA memory reset.\n");
+
 	printk("cht write: Start the transaction\n");
 	//dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr);
 	return 0;
@@ -393,7 +415,7 @@ static int __init cht_init(void)
 	}
 	printk(KERN_INFO "cht_init: Module init done\n");
 
-	tx_vir_buffer = dma_alloc_coherent(NULL, TX_PKT_LEN, &tx_phy_buffer, GFP_DMA | GFP_KERNEL);
+	/*tx_vir_buffer = dma_alloc_coherent(NULL, TX_PKT_LEN, &tx_phy_buffer, GFP_DMA | GFP_KERNEL);
 	if(!tx_vir_buffer){
 		printk(KERN_ALERT "cht_init: Could not allocate dma_alloc_coherent for tx buffer");
 		goto fail_3;
@@ -413,7 +435,7 @@ static int __init cht_init(void)
 		tx_vir_buffer[i] = 0x00000000;
 	for (i = 0; i < RX_PKT_LEN/4;i++)
 		rx_vir_buffer[i] = 0x00000000;
-	printk(KERN_INFO "cht_init: DMA memory reset.\n");
+	printk(KERN_INFO "cht_init: DMA memory reset.\n");*/
 	return platform_driver_register(&cht_driver);
 
 fail_3:
