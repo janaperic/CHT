@@ -212,6 +212,7 @@ static ssize_t cht_read(struct file *f, char __user *buf, size_t len, loff_t *of
 static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, loff_t *off)
 {	
 	printk("cht write\n");
+	dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr);
 	return 0;
 
 }
