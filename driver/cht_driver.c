@@ -221,6 +221,7 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 	int ret, val;
 	long length = vma_s->vm_end - vma_s->vm_start;
 	printk(KERN_NOTICE "cht_mmap: Inside\n");
+	printk(KERN_NOTICE "length: %ld\n", length);
 
 	//printk(KERN_INFO "DMA TX Buffer is being memory mapped\n");
 	ret = 0;
@@ -231,24 +232,30 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 		printk(KERN_ERR "Trying to mmap more space than it's allocated\n");
 	}*/
 
-	ret = dma_mmap_coherent(NULL, vma_s, tx_vir_buffer, tx_phy_buffer, length);
-	if(ret<0)
+	if(length > 500000)
 	{
-		printk(KERN_ERR "TX memory map failed\n");
-		return ret;
+		ret = dma_mmap_coherent(NULL, vma_s, tx_vir_buffer, tx_phy_buffer, length);
+		if(ret<0)
+		{
+			printk(KERN_ERR "TX memory map failed\n");
+			return ret;
+		}
+		
+		dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr); 
+		printk(KERN_NOTICE "passed dma_simple_write\n");
 	}
-	
-	dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr); 
-	printk(KERN_NOTICE "passed dma_simple_write\n");
-
-	/*val = dma_mmap_coherent(NULL, vma_s, rx_vir_buffer, rx_phy_buffer, length * 360);
-	if(val<0)
+	else
 	{
-		printk(KERN_ERR "RX memory map failed\n");
-		return val;
+		val = dma_mmap_coherent(NULL, vma_s, rx_vir_buffer, rx_phy_buffer, length * 360);
+		if(val<0)
+		{
+			printk(KERN_ERR "RX memory map failed\n");
+			return val;
 
+		}
+		dma_simple_read(rx_phy_buffer, RX_PKT_LEN, vp->base_addr);
+		printk(KERN_NOTICE "passed dma_simple_read\n");
 	}
-	dma_simple_read(rx_phy_buffer, RX_PKT_LEN, vp->base_addr);*/
 
 	return 0;
 }
