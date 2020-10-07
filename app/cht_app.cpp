@@ -227,14 +227,14 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int 
   int height = matrix.rows;
   int width = matrix.cols;
   Mat acc = Mat::zeros(height, width, CV_32S);
-  int a,b;
+  unsigned int a,b;
 
 
   cout << "HEIGHT : " << height << endl;
   cout << "WIDTH : " << width << endl; 
 
   int tx_buff[numw + 1];//Array of pixels that will be mapped to DMA (+1 because tx_buff[0] will hold radius value)
-  int rx_buff[numw * 360]; //Array of pixels that will be received
+  unsigned int rx_buff[numw * 360]; //Array of pixels that will be received
   int temp = 1;
 
   for(int y = 0; y < height; y++) {
@@ -261,10 +261,14 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int 
 
   memcpy(rx_buff, rx, numw * 360 * 4);
 
+  for(int i = 0; i < 5; i++)
+    cout << "rx_buff[i] = " << rx_buff[i] << endl;
+
+
   for(int i = 0; i < ((numw * 360) - 1); i++)
   {
-    a = rx_buff[i] & 1023; // first 10 bits
-    b = rx_buff[i] & 1047552; // second 10 bits
+    a = rx_buff[i] & 0x3FF; // first 10 bits
+    b = rx_buff[i] & 0xFFC00; // second 10 bits
     if(a < width && b < height && !(rx_buff[i] & (1 << 31)))
             acc.at<int>(b,a) += 1;
   }
