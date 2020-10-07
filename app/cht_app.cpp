@@ -249,8 +249,13 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int 
   }
   tx_buff[0] = r | (1 << 31);
 
+  int tmp1=0;
+  for(int j = 0; i <= numw; i++)
+    if(tx_buff[i] == 0)
+      tmp1 ++;
+  cout << "tx_buff is zero: " << tmp1 << " times." << endl;
+
   char start[5] = "1";
-  //sprintf(numw_string, "%d", numw); //Convert numw to a string
 
   //With memcpy() we are copying the values of numw bytes from the location 
   //pointed to by tx_buff directly to the memory block pointed to by p.
