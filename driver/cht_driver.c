@@ -232,7 +232,7 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 		printk(KERN_ERR "Trying to mmap more space than it's allocated\n");
 	}*/
 
-	if(length > 500000)
+	if(length < 500000)
 	{
 		ret = dma_mmap_coherent(NULL, vma_s, tx_vir_buffer, tx_phy_buffer, length);
 		if(ret<0)
@@ -242,7 +242,7 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 		}
 		
 		dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr); 
-		printk(KERN_NOTICE "passed dma_simple_write\n");
+		//printk(KERN_NOTICE "passed dma_simple_write\n");
 	}
 	else
 	{
@@ -254,7 +254,7 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 
 		}
 		dma_simple_read(rx_phy_buffer, RX_PKT_LEN, vp->base_addr);
-		printk(KERN_NOTICE "passed dma_simple_read\n");
+		//printk(KERN_NOTICE "passed dma_simple_read\n");
 	}
 
 	return 0;
@@ -307,17 +307,13 @@ u32 dma_simple_write(dma_addr_t TxBufferPtr, u32 max_pkt_len, void __iomem *base
 	printk(KERN_NOTICE "dma_simple_write: Inside\n");
 
 	MM2S_DMACR_reg = ioread32(base_address); // reading the current configuration from MM2S_DMACR register
-	printk(KERN_NOTICE "flag1\n");
 
 	iowrite32(0x1 |  MM2S_DMACR_reg, base_address); // set RS bit in MM2S_DMACR register (this bit starts the DMA)
-	printk(KERN_NOTICE "flag2\n");
 
 	iowrite32((u32)TxBufferPtr, base_address + 24); // Write into MM2S_SA register the value of TxBufferPtr.
 	// With this, the DMA knows from where to start.
-	printk(KERN_NOTICE "flag3\n");
 
 	iowrite32(max_pkt_len, base_address + 40); // Write into MM2S_LENGTH register. This is the length of a tranaction.
-	printk(KERN_NOTICE "flag4\n");
 	return 0;
 }
 
