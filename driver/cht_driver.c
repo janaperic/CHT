@@ -211,14 +211,14 @@ static ssize_t cht_read(struct file *f, char __user *buf, size_t len, loff_t *of
 
 static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, loff_t *off)
 {	
-	char buff[100] = NULL;
+	char buff[100] = "";
 	int ret = 0, numw = 0;
 	ret = copy_from_user(buff, buf, length);  
 	if(ret){
 		printk("copy from user failed \n");
 		return -EFAULT;
 	}  
-	numw = (int)(buff);
+	scanf(buff, "%d", &numw);
 	printk("cht write: Number of white pixels = %d\n", numw);
 
 	printk("cht write: Start the transaction\n");

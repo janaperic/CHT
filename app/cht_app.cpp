@@ -245,7 +245,7 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int 
   tx_buff[0] = r | (1 << 31);
 
   char numw_string[100];
-  sprintf(numw_string, "%d", numw;)
+  sprintf(numw_string, "%d", numw);
 
   //With memcpy() we are copying the values of numw bytes from the location 
   //pointed to by tx_buff directly to the memory block pointed to by p.
