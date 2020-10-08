@@ -10,11 +10,11 @@
 #include <linux/errno.h>
 #include <linux/device.h>
 
-#include <linux/io.h> //iowrite ioread
-#include <linux/slab.h>//kmalloc kfree
-#include <linux/platform_device.h>//platform driver
-#include <linux/of.h>//of_match_table
-#include <linux/ioport.h>//ioremap
+#include <linux/io.h>	//iowrite ioread
+#include <linux/slab.h>	//kmalloc kfree
+#include <linux/platform_device.h>	//platform driver
+#include <linux/of.h>	//of_match_table
+#include <linux/ioport.h>	//ioremap
 
 #include <linux/dma-mapping.h>  //dma access
 #include <linux/mm.h>  //dma access
@@ -27,9 +27,9 @@ MODULE_ALIAS("custom:cht ip core driver");
 
 #define DEVICE_NAME "cht"
 #define DRIVER_NAME "cht_driver"
-/////////VELICINA?
-unsigned int TX_PKT_LEN;
-unsigned int RX_PKT_LEN;
+
+unsigned int TX_PKT_LEN; //size of transmit data
+unsigned int RX_PKT_LEN; // size of receive data
 
 //*******************FUNCTION PROTOTYPES************************************
 static int cht_probe(struct platform_device *pdev);
@@ -117,7 +117,6 @@ static int cht_probe(struct platform_device *pdev)
 		return -ENOMEM;
 	}
 	// Put physical adresses in timer_info structure
-	// ??????????
 	vp->mem_start = r_mem->start;
 	vp->mem_end = r_mem->end;
 
@@ -129,7 +128,6 @@ static int cht_probe(struct platform_device *pdev)
 		goto error1;
 	}    
 	// Remap physical to virtual adresses
-
 	vp->base_addr = ioremap(vp->mem_start, vp->mem_end - vp->mem_start + 1);
 	if (!vp->base_addr) {
 		printk(KERN_ALERT "cht_probe: Could not allocate memory for remapping\n");
@@ -137,7 +135,7 @@ static int cht_probe(struct platform_device *pdev)
 		goto error2;
 	}
 
-	// Get irq num 
+	// Get irq number
 	vp->irq_num = platform_get_irq(pdev, 0);
 	if(!vp->irq_num)
 	{
@@ -161,7 +159,7 @@ static int cht_probe(struct platform_device *pdev)
 	//dma_simple_read(rx_phy_buffer, RX_PKT_LEN, vp->base_addr);
 
 	printk(KERN_NOTICE "cht_probe: CHT platform driver registered\n");
-	return 0;//ALL OK
+	return 0;
 
 error3:
 	iounmap(vp->base_addr);
@@ -193,19 +191,19 @@ static int cht_remove(struct platform_device *pdev)
 // IMPLEMENTATION OF FILE OPERATION FUNCTIONS
 static int cht_open(struct inode *i, struct file *f)
 {
-	//printk(KERN_INFO "cht opened\n");
+	//printk("cht opened\n");
 	return 0;
 }
 
 static int cht_close(struct inode *i, struct file *f)
 {
-	//printk(KERN_INFO "cht closed\n");
+	//printk("cht closed\n");
 	return 0;
 }
 
 static ssize_t cht_read(struct file *f, char __user *buf, size_t len, loff_t *off)
 {
-	printk("cht read\n");
+	//printk("cht read\n");
 	return 0;
 }
 
@@ -217,11 +215,11 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 	int i = 0;
 	ret = copy_from_user(buff, buf, length);  
 	if(ret){
-		printk("copy from user failed \n");
+		printk("Copy from user failed \n");
 		return -EFAULT;
 	}  
 	sscanf(buff, "%d", &numw);
-	if(numw != 1) 
+	if(numw != 1) //If numw is not 1, app is sending the number of white pixels
 	{
 		printk("cht write: Number of white pixels = %d\n", numw);
 
@@ -231,41 +229,43 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 		printk("cht write: TX_PKT_LEN = %d\n", TX_PKT_LEN);
 		printk("cht write: RX_PKT_LEN = %d\n", RX_PKT_LEN);
 
+		//Allocating memory for TX channel
 		tx_vir_buffer = dma_alloc_coherent(NULL, TX_PKT_LEN, &tx_phy_buffer, GFP_DMA | GFP_KERNEL);
-		if(!tx_vir_buffer){
-			printk(KERN_ALERT "cht_init: Could not allocate dma_alloc_coherent for tx buffer");
-			goto fail_3;
+		if(!tx_vir_buffer)
+		{
+			printk(KERN_ALERT "cht_init: Could not allocate memory for TX buffer");
+			cdev_del(my_cdev);
+			return -1;
 		}
 		else
-			printk("cht_init: Successfully allocated memory for dma transmit buffer\n");
+			printk("cht_init: Successfully allocated memory for DMA TX buffer\n");
 
+		//Allocating memory for RX channel
 		rx_vir_buffer = dma_alloc_coherent(NULL, RX_PKT_LEN, &rx_phy_buffer, GFP_DMA | GFP_KERNEL);
-		if(!rx_vir_buffer){
-			printk(KERN_ALERT "cht_init: Could not allocate dma_alloc_coherent for rx buffer");
-			goto fail_3;
+		if(!rx_vir_buffer)
+		{
+			printk(KERN_ALERT "cht_init: Could not allocate memory for RX buffer");
+			cdev_del(my_cdev);
+			return -1;
 		}
 		else
-			printk("cht_init: Successfully allocated memory for dma receive buffer\n");
+			printk("cht_init: Successfully allocated memory for DMA RX buffer\n");
 
+		//Resetting buffers
 		for (i = 0; i < TX_PKT_LEN/4;i++)
 			tx_vir_buffer[i] = 0x00000000;
 		for (i = 0; i < RX_PKT_LEN/4;i++)
 			rx_vir_buffer[i] = 0x00000000;
 		printk(KERN_INFO "cht_init: DMA memory reset.\n");
 	}
-	else //if numw == 1, start the transaction
+	else //When numw is 1, it's the signal to start the first transaction
 	{
 		printk("cht write: Start the transaction\n");
 		printk("tx_vir_buffer[31] = %d\n", tx_vir_buffer[31]);
 		dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr);
 	}
 
-fail_3:
-	cdev_del(my_cdev);
-	return -1;
-
 	return 0;
-
 }
 
 static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
@@ -275,17 +275,12 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 	printk(KERN_NOTICE "cht_mmap: Inside\n");
 	printk(KERN_NOTICE "length: %ld\n", length);
 
-	//printk(KERN_INFO "DMA TX Buffer is being memory mapped\n");
 	ret = 0;
 	val = 0;
-	/*if(length > MAX_PKT_LEN)
-	{
-		return -EIO;
-		printk(KERN_ERR "Trying to mmap more space than it's allocated\n");
-	}*/
 
 	if(length < 500000)
 	{
+		//Memory mapping of the TX buffer
 		ret = dma_mmap_coherent(NULL, vma_s, tx_vir_buffer, tx_phy_buffer, length);
 		if(ret<0)
 		{
@@ -295,7 +290,8 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 		
 	}
 	else
-	{
+	{	
+		//Memory mapping od the RX buffer
 		val = dma_mmap_coherent(NULL, vma_s, rx_vir_buffer, rx_phy_buffer, length);
 		if(val<0)
 		{
@@ -317,12 +313,9 @@ static irqreturn_t dma_isr(int irq,void*dev_id)
 	u32 IrqStatus;  
 	printk(KERN_NOTICE "dma_isr: Inside\n");
 	/* Read pending interrupts */
-	IrqStatus = ioread32(vp->base_addr + 52);//read irq status from S2MM_DMASR register
-	iowrite32(IrqStatus | 0x00007000, vp->base_addr + 52);//clear irq status in S2MM_DMASR register
-	//(clearing is done by writing 1 on 13. bit in S2MM_DMASR (IOC_Irq)
+	IrqStatus = ioread32(vp->base_addr + 52);//Read irq status from S2MM_DMASR register
+	iowrite32(IrqStatus | 0x00007000, vp->base_addr + 52);//Clear irq status in S2MM_DMASR register
 
-	/*Send a transaction*/
-	//dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr); //My function that starts a DMA transaction
 	return IRQ_HANDLED;
 }
 
@@ -336,14 +329,14 @@ int dma_init(void __iomem *base_address)
 	printk(KERN_NOTICE "dma_init: Inside\n");
 
 	//Configuring the reset bit in MM2S channel
-	iowrite32(reset, base_address); // writing to MM2S_DMACR register. Seting reset bit (3. bit)  
+	iowrite32(reset, base_address); // Writing to MM2S_DMACR register. Seting reset bit (3. bit)  
 
 	//Configuring the reset bit and interrupt in S2MM channel
 	S2MM_DMACR_reg = ioread32(base_address + 52);
 	iowrite32(0x1 | S2MM_DMACR_reg, base_address + 52);
 
-	IOC_IRQ_EN_S2MM = 1 << 12; // this is IOC_IrqEn bit in S2MM_DMACR register
-	ERR_IRQ_EN_S2MM = 1 << 14; // this is Err_IrqEn bit in S2MM_DMACR register
+	IOC_IRQ_EN_S2MM = 1 << 12; //This is IOC_IrqEn bit in S2MM_DMACR register
+	ERR_IRQ_EN_S2MM = 1 << 14; //This is Err_IrqEn bit in S2MM_DMACR register
 	en_interrupt = S2MM_DMACR_reg | IOC_IRQ_EN_S2MM | ERR_IRQ_EN_S2MM;
 	iowrite32(en_interrupt, base_address + 48);
 
@@ -351,19 +344,25 @@ int dma_init(void __iomem *base_address)
 }
 
 //Confguration of MM2S channel
-u32 dma_simple_write(dma_addr_t TxBufferPtr, u32 max_pkt_len, void __iomem *base_address) {
+u32 dma_simple_write(dma_addr_t TxBufferPtr, u32 max_pkt_len, void __iomem *base_address) 
+{
 	u32 MM2S_DMACR_reg;
-	printk(KERN_NOTICE "dma_simple_write: Inside\n");
+	printk(KERN_NOTICE "dma_simple_write: Writing pixels\n");
 
-	MM2S_DMACR_reg = ioread32(base_address); // reading the current configuration from MM2S_DMACR register
+	//Reading the current configuration from MM2S_DMACR register
+	MM2S_DMACR_reg = ioread32(base_address); 
 
-	iowrite32(0x1 |  MM2S_DMACR_reg, base_address); // set RS bit in MM2S_DMACR register (this bit starts the DMA)
+	//Set RS bit in MM2S_DMACR register (this bit starts the DMA)
+	iowrite32(0x1 |  MM2S_DMACR_reg, base_address); 
 
-	iowrite32((u32)TxBufferPtr, base_address + 24); // Write into MM2S_SA register the value of TxBufferPtr.
-	// With this, the DMA knows from where to start.
+	//Write into MM2S_SA register the value of TxBufferPtr.
+	//With this, the DMA knows from where to start.
+	iowrite32((u32)TxBufferPtr, base_address + 24); 
 
-	iowrite32(max_pkt_len, base_address + 40); // Write into MM2S_LENGTH register. This is the length of a tranaction.
+	//Write into MM2S_LENGTH register. This is the length of a tranaction.
+	iowrite32(max_pkt_len, base_address + 40); 
 	
+	//Start reading data from IP
 	dma_simple_read(rx_phy_buffer, RX_PKT_LEN, vp->base_addr);
 	return 0;
 }
@@ -372,22 +371,25 @@ u32 dma_simple_write(dma_addr_t TxBufferPtr, u32 max_pkt_len, void __iomem *base
 u32 dma_simple_read(dma_addr_t RxBufferPtr, u32 max_pkt_len, void __iomem *base_address)
 {
 	u32 S2MM_DMACR_reg;
-	printk(KERN_NOTICE "dma_simple_read: Inside\n");
+	printk(KERN_NOTICE "dma_simple_read: Reading pixels\n");
 
+	//Reading the current configuration from S2MM_DMACR register
 	S2MM_DMACR_reg = ioread32(base_address + 48);
-	iowrite32(0x1 | S2MM_DMACR_reg, base_address + 48); //setting the RS bit of S2MM_DMACR register
 
-	iowrite32((u32)RxBufferPtr, base_address + 72); //setting the S2MM_DA register
+	//Setting the RS bit of S2MM_DMACR register
+	iowrite32(0x1 | S2MM_DMACR_reg, base_address + 48); 
 
-	iowrite32(max_pkt_len, base_address + 88); //Setting the S2MM_LENGTH register
+	//Setting the S2MM_DA register
+	iowrite32((u32)RxBufferPtr, base_address + 72); 
 
+	//Setting the S2MM_LENGTH register
+	iowrite32(max_pkt_len, base_address + 88); 
 	return 0;
 }
 
 
 //***************************************************
 // INIT AND EXIT FUNCTIONS OF THE DRIVER
-
 static int __init cht_init(void)
 {
 
@@ -415,6 +417,7 @@ static int __init cht_init(void)
 		goto fail_1;
 	}
 
+	//Move cdev to cht_write function???
 	printk(KERN_INFO "cht_init: Device created\n");
 
 	my_cdev = cdev_alloc();	
@@ -465,7 +468,7 @@ fail_0:
 
 static void __exit cht_exit(void)  		
 {
-	//Reset DMA memory
+	//Reset DMA 
 	int i =0;
 	for (i = 0; i < TX_PKT_LEN/4; i++) 
 		tx_vir_buffer[i] = 0x00000000;

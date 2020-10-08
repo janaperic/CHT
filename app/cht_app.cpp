@@ -227,7 +227,7 @@ int MatGlobalMax(Mat matrix) {
 }
 
 Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int fd) {
-  //accumulator matrix, type CV_32S (i.e. int), intialized with zeros
+  //Accumulator matrix, type CV_32S (i.e. int), intialized with zeros
   int height = matrix.rows;
   int width = matrix.cols;
   Mat acc = Mat::zeros(height, width, CV_32S);
@@ -253,13 +253,7 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int 
   }
   tx_buff[0] = r | (1 << 31);
 
-  /*int tmp1=0;
-  for(int j = 0; j <= numw; j++)
-    if(tx_buff[j] == 0)
-      tmp1 ++;
-  cout << "tx_buff is zero: " << tmp1 << " times." << endl;*/
-
-  char start[5] = "1";
+  char start[5] = "1"; 
 
   //With memcpy() we are copying the values of numw bytes from the location 
   //pointed to by tx_buff directly to the memory block pointed to by p.
@@ -268,18 +262,8 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int 
   //Notify the driver that pixels have been copied
   write(fd, start, sizeof(start));
   sleep(1);
+  //Recieving the pixels
   memcpy(rx_buff, rx, numw * 360 * 4);
-
-  //for(int i = 0; i < 5; i++)
-   // cout << "rx_buff[i] = " << rx_buff[i] << endl;
-
-  /*int tmp = 0;
-  for(int i = 0; i < ((numw * 360) - 1); i++)
-    if(rx_buff[i] == 0)
-      tmp++;
-
-  cout << "rx_buff is zero: " << tmp << " times." << endl;*/
-
 
   for(int i = 0; i < ((numw * 360) - 1); i++)
   {
