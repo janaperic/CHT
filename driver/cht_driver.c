@@ -213,7 +213,6 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 	int ret = 0;
 	int numw = 0;
 	int i = 0;
-	int tmp = 0;
 	ret = copy_from_user(buff, buf, length);  
 	if(ret){
 		printk("Copy from user failed \n");
@@ -457,8 +456,8 @@ static int __init cht_init(void)
 
 //fail_3:
 	//cdev_del(my_cdev);
-//fail_2:
-	//device_destroy(my_class, MKDEV(MAJOR(my_dev_id),0));
+fail_2:
+	device_destroy(my_class, MKDEV(MAJOR(my_dev_id),0));
 fail_1:
 	class_destroy(my_class);
 fail_0:
