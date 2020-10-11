@@ -231,6 +231,29 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 		printk("cht write: RX_PKT_LEN = %d\n", RX_PKT_LEN);
 
 
+		printk(KERN_INFO "cht_init: Initialize Module \"%s\"\n", DEVICE_NAME);
+		ret = alloc_chrdev_region(&my_dev_id, 0, 1, "CHT_region");
+		if (ret)
+		{
+			printk(KERN_ALERT "cht_init: Failed CHRDEV!\n");
+			return -1;
+		}
+		printk(KERN_INFO "cht_init: Successful CHRDEV!\n");
+		my_class = class_create(THIS_MODULE, "CHT_drv");
+		if (my_class == NULL)
+		{
+			printk(KERN_ALERT "cht_init: Failed class create!\n");
+			unregister_chrdev_region(my_dev_id, 1);
+		}
+		printk(KERN_INFO "cht_init: Successful class chardev1 create!\n");
+		my_device = device_create(my_class, NULL, MKDEV(MAJOR(my_dev_id),0), NULL, "cht");
+		if (my_device == NULL)
+		{
+			class_destroy(my_class);
+		}
+
+		printk(KERN_INFO "cht_write: Device created\n");
+
 		my_cdev = cdev_alloc();	
 		my_cdev->ops = &my_fops;
 		my_cdev->owner = THIS_MODULE;
@@ -270,6 +293,8 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 		for (i = 0; i < RX_PKT_LEN/4;i++)
 			rx_vir_buffer[i] = 0x00000000;
 		printk(KERN_INFO "cht_init: DMA memory reset.\n");
+
+		return platform_driver_register(&cht_driver);
 	}
 	else //When numw is 1, it's the signal to start the first transaction
 	{
@@ -406,7 +431,7 @@ u32 dma_simple_read(dma_addr_t RxBufferPtr, u32 max_pkt_len, void __iomem *base_
 static int __init cht_init(void)
 {
 
-	int ret = 0;
+	/*int ret = 0;
 	//int i = 0;
 
 	printk(KERN_INFO "cht_init: Initialize Module \"%s\"\n", DEVICE_NAME);
@@ -431,7 +456,7 @@ static int __init cht_init(void)
 	}
 
 	//Move cdev to cht_write function???
-	printk(KERN_INFO "cht_init: Device created\n");
+	printk(KERN_INFO "cht_init: Device created\n");*/
 
 	/*my_cdev = cdev_alloc();	
 	my_cdev->ops = &my_fops;
@@ -471,11 +496,12 @@ static int __init cht_init(void)
 	//cdev_del(my_cdev);
 //fail_2:
 	//device_destroy(my_class, MKDEV(MAJOR(my_dev_id),0));
-fail_1:
+/*fail_1:
 	class_destroy(my_class);
 fail_0:
 	unregister_chrdev_region(my_dev_id, 1);
-	return -1;
+	return -1;*/
+	return 0;
 
 } 
 
