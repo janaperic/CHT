@@ -255,8 +255,6 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 		for (i = 0; i < RX_PKT_LEN/4;i++)
 			rx_vir_buffer[i] = 0x00000000;
 		printk(KERN_INFO "cht_init: DMA memory reset.\n");
-
-		return platform_driver_register(&cht_driver);
 	}
 	else //When numw is 1, it's the signal to start the first transaction
 	{
@@ -326,7 +324,7 @@ int dma_init(void __iomem *base_address)
 	u32 ERR_IRQ_EN_S2MM;
 	u32 en_interrupt;
 	u32 S2MM_DMACR_reg;
-	printk(KERN_NOTICE "dma_init: Inside\n");
+	printk(KERN_NOTICE "dma_init: Initialising DMA\n");
 
 	//Configuring the reset bit in MM2S channel
 	iowrite32(reset, base_address); // Writing to MM2S_DMACR register. Seting reset bit (3. bit)  

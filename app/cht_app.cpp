@@ -268,9 +268,9 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int 
   for(int i = 0; i < ((numw * 360) - 1); i++)
   {
     a = rx_buff[i] & 0x3FF; // first 10 bits
-    b = rx_buff[i] & 0xFFC00; // second 10 bits
-    if(i < 20)
-      cout << "rx_buff = " << rx_buff[i] << endl;
+    b = (rx_buff[i] & 0xFFC00) >> 10; // second 10 bits
+    //if(i < 20)
+     // cout << "rx_buff = " << rx_buff[i] << endl;
     if(a < width && b < height && !(rx_buff[i] & (1 << 31)))
     {
       acc.at<int>(b,a) += 1;
