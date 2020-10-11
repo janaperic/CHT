@@ -230,47 +230,11 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 		printk("cht write: TX_PKT_LEN = %d\n", TX_PKT_LEN);
 		printk("cht write: RX_PKT_LEN = %d\n", RX_PKT_LEN);
 
-
-		printk(KERN_INFO "cht_init: Initialize Module \"%s\"\n", DEVICE_NAME);
-		ret = alloc_chrdev_region(&my_dev_id, 0, 1, "CHT_region");
-		if (ret)
-		{
-			printk(KERN_ALERT "cht_init: Failed CHRDEV!\n");
-			return -1;
-		}
-		printk(KERN_INFO "cht_init: Successful CHRDEV!\n");
-		my_class = class_create(THIS_MODULE, "CHT_drv");
-		if (my_class == NULL)
-		{
-			printk(KERN_ALERT "cht_init: Failed class create!\n");
-			unregister_chrdev_region(my_dev_id, 1);
-		}
-		printk(KERN_INFO "cht_init: Successful class chardev1 create!\n");
-		my_device = device_create(my_class, NULL, MKDEV(MAJOR(my_dev_id),0), NULL, "cht");
-		if (my_device == NULL)
-		{
-			class_destroy(my_class);
-		}
-
-		printk(KERN_INFO "cht_write: Device created\n");
-
-		my_cdev = cdev_alloc();	
-		my_cdev->ops = &my_fops;
-		my_cdev->owner = THIS_MODULE;
-		tmp = cdev_add(my_cdev, my_dev_id, 1);
-		if (tmp)
-		{
-			printk(KERN_ERR "cht_write: Failed to add cdev\n");
-			device_destroy(my_class, MKDEV(MAJOR(my_dev_id),0));;
-		}
-		printk(KERN_INFO "cht_write: Module init done\n");
-
 		//Allocating memory for TX channel
 		tx_vir_buffer = dma_alloc_coherent(NULL, TX_PKT_LEN, &tx_phy_buffer, GFP_DMA | GFP_KERNEL);
 		if(!tx_vir_buffer)
 		{
 			printk(KERN_ALERT "cht_init: Could not allocate memory for TX buffer");
-			cdev_del(my_cdev);
 			return -1;
 		}
 		else
@@ -281,7 +245,6 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 		if(!rx_vir_buffer)
 		{
 			printk(KERN_ALERT "cht_init: Could not allocate memory for RX buffer");
-			cdev_del(my_cdev);
 			return -1;
 		}
 		else
@@ -431,7 +394,7 @@ u32 dma_simple_read(dma_addr_t RxBufferPtr, u32 max_pkt_len, void __iomem *base_
 static int __init cht_init(void)
 {
 
-	/*int ret = 0;
+	int ret = 0;
 	//int i = 0;
 
 	printk(KERN_INFO "cht_init: Initialize Module \"%s\"\n", DEVICE_NAME);
@@ -456,9 +419,9 @@ static int __init cht_init(void)
 	}
 
 	//Move cdev to cht_write function???
-	printk(KERN_INFO "cht_init: Device created\n");*/
+	printk(KERN_INFO "cht_init: Device created\n");
 
-	/*my_cdev = cdev_alloc();	
+	my_cdev = cdev_alloc();	
 	my_cdev->ops = &my_fops;
 	my_cdev->owner = THIS_MODULE;
 	ret = cdev_add(my_cdev, my_dev_id, 1);
@@ -467,7 +430,7 @@ static int __init cht_init(void)
 		printk(KERN_ERR "cht_init: Failed to add cdev\n");
 		goto fail_2;
 	}
-	printk(KERN_INFO "cht_init: Module init done\n");*/
+	printk(KERN_INFO "cht_init: Module init done\n");
 
 	/*tx_vir_buffer = dma_alloc_coherent(NULL, TX_PKT_LEN, &tx_phy_buffer, GFP_DMA | GFP_KERNEL);
 	if(!tx_vir_buffer){
@@ -496,11 +459,11 @@ static int __init cht_init(void)
 	//cdev_del(my_cdev);
 //fail_2:
 	//device_destroy(my_class, MKDEV(MAJOR(my_dev_id),0));
-/*fail_1:
+fail_1:
 	class_destroy(my_class);
 fail_0:
 	unregister_chrdev_region(my_dev_id, 1);
-	return -1;*/
+	return -1;
 	return 0;
 
 } 
