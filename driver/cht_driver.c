@@ -213,6 +213,7 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 	int ret = 0;
 	int numw = 0;
 	int i = 0;
+	int tmp = 0;
 	ret = copy_from_user(buff, buf, length);  
 	if(ret){
 		printk("Copy from user failed \n");
@@ -228,6 +229,18 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 
 		printk("cht write: TX_PKT_LEN = %d\n", TX_PKT_LEN);
 		printk("cht write: RX_PKT_LEN = %d\n", RX_PKT_LEN);
+
+
+		my_cdev = cdev_alloc();	
+		my_cdev->ops = &my_fops;
+		my_cdev->owner = THIS_MODULE;
+		tmp = cdev_add(my_cdev, my_dev_id, 1);
+		if (tmp)
+		{
+			printk(KERN_ERR "cht_write: Failed to add cdev\n");
+			device_destroy(my_class, MKDEV(MAJOR(my_dev_id),0));;
+		}
+		printk(KERN_INFO "cht_write: Module init done\n");
 
 		//Allocating memory for TX channel
 		tx_vir_buffer = dma_alloc_coherent(NULL, TX_PKT_LEN, &tx_phy_buffer, GFP_DMA | GFP_KERNEL);
@@ -272,7 +285,7 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 {
 	int ret, val;
 	long length = vma_s->vm_end - vma_s->vm_start;
-	printk(KERN_NOTICE "cht_mmap: Inside\n");
+	printk(KERN_NOTICE "cht_mmap: Memory mapping\n");
 	printk(KERN_NOTICE "length: %ld\n", length);
 
 	ret = 0;
@@ -311,7 +324,7 @@ static ssize_t cht_mmap(struct file *f, struct vm_area_struct *vma_s)
 static irqreturn_t dma_isr(int irq,void*dev_id)
 {
 	u32 IrqStatus;  
-	printk(KERN_NOTICE "dma_isr: Inside\n");
+	printk(KERN_NOTICE "dma_isr: An interrupt has occured\n");
 	/* Read pending interrupts */
 	IrqStatus = ioread32(vp->base_addr + 52);//Read irq status from S2MM_DMASR register
 	iowrite32(IrqStatus | 0x00007000, vp->base_addr + 52);//Clear irq status in S2MM_DMASR register
@@ -420,7 +433,7 @@ static int __init cht_init(void)
 	//Move cdev to cht_write function???
 	printk(KERN_INFO "cht_init: Device created\n");
 
-	my_cdev = cdev_alloc();	
+	/*my_cdev = cdev_alloc();	
 	my_cdev->ops = &my_fops;
 	my_cdev->owner = THIS_MODULE;
 	ret = cdev_add(my_cdev, my_dev_id, 1);
@@ -429,7 +442,7 @@ static int __init cht_init(void)
 		printk(KERN_ERR "cht_init: Failed to add cdev\n");
 		goto fail_2;
 	}
-	printk(KERN_INFO "cht_init: Module init done\n");
+	printk(KERN_INFO "cht_init: Module init done\n");*/
 
 	/*tx_vir_buffer = dma_alloc_coherent(NULL, TX_PKT_LEN, &tx_phy_buffer, GFP_DMA | GFP_KERNEL);
 	if(!tx_vir_buffer){
@@ -456,8 +469,8 @@ static int __init cht_init(void)
 
 //fail_3:
 	//cdev_del(my_cdev);
-fail_2:
-	device_destroy(my_class, MKDEV(MAJOR(my_dev_id),0));
+//fail_2:
+	//device_destroy(my_class, MKDEV(MAJOR(my_dev_id),0));
 fail_1:
 	class_destroy(my_class);
 fail_0:
