@@ -380,7 +380,6 @@ u32 dma_simple_write(dma_addr_t TxBufferPtr, u32 max_pkt_len, void __iomem *base
 u32 dma_simple_read(dma_addr_t RxBufferPtr, u32 max_pkt_len, void __iomem *base_address)
 {
 	u32 S2MM_DMACR_reg;
-	printk(KERN_NOTICE "dma_simple_read: Reading pixels\n");
 
 	//Reading the current configuration from S2MM_DMACR register
 	S2MM_DMACR_reg = ioread32(base_address + 48);
