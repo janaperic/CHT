@@ -264,6 +264,8 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int 
   //Notify the driver that pixels have been copied
   write(fd, start, sizeof(start));
 
+  read(fd, finish_s, sizeof(finish_s));
+  sscanf(finish_s, "%d", &finish);
   while(finish != 1) // Check if driver is ready to send pixels
   {
     read(fd, finish_s, sizeof(finish_s));

@@ -203,7 +203,7 @@ static int cht_close(struct inode *i, struct file *f)
 static ssize_t cht_read(struct file *f, char __user *buf, size_t len, loff_t *off)
 {
 	int ret = 0;
-	printk(KERN_INFO "cht_read: Cheking if driver is ready to send pixels.\n");
+	printk(KERN_NOTICE "cht_read: Cheking if driver is ready to send pixels.\n");
 	ret = copy_to_user(buf, FINISHED, len);
 	if(ret){
 		printk("Copy to user failed \n");
@@ -428,7 +428,6 @@ static int __init cht_init(void)
 		goto fail_1;
 	}
 
-	//Move cdev to cht_write function???
 	printk(KERN_INFO "cht_init: Device created\n");
 
 	my_cdev = cdev_alloc();	
