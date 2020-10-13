@@ -269,6 +269,7 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int 
   if(finish == 1)
   {
     //Recieving the pixels
+    cout << "start reading the pixels!" << endl;
     memcpy(rx_buff, rx, numw * 360 * 4);
 
     for(int i = 0; i < ((numw * 360) - 1); i++)

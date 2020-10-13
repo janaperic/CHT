@@ -320,7 +320,7 @@ static irqreturn_t dma_isr(int irq,void*dev_id)
 	printk(KERN_NOTICE "dma_isr: An interrupt has occured\n");
 
 	//Send the signal to the app that IP has finished
-	FINISHED[0] = "1";
+	FINISHED[0] = 1;
 
 	/* Read pending interrupts */
 	IrqStatus = ioread32(vp->base_addr + 52);//Read irq status from S2MM_DMASR register
