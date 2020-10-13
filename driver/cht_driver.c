@@ -217,7 +217,7 @@ static ssize_t cht_read(struct file *f, char __user *bu, size_t len, loff_t *off
 
 static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, loff_t *off)
 {	
-	char buff[5] = "";
+	char buff[100] = "";
 	int ret = 0;
 	int numw = 0;
 	int i = 0;
