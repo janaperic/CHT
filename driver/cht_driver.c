@@ -230,7 +230,7 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 	sscanf(buff, "%d", &numw);
 	if(numw != 1) //If numw is not 1, app is sending the number of white pixels
 	{
-		printk("cht write: Number of white pixels = %d\n", numw);
+		printk("cht_write: Number of white pixels = %d\n", numw);
 
 		TX_PKT_LEN = (numw + 1) * 4;
 		RX_PKT_LEN = numw * 360 * 4;
