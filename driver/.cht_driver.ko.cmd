@@ -1,1 +1,0 @@
-cmd_/root/CHT/driver/cht_driver.ko := ld -r  -EL -T ./scripts/module-common.lds -T ./arch/arm/kernel/module.lds  --build-id  -o /root/CHT/driver/cht_driver.ko /root/CHT/driver/cht_driver.o /root/CHT/driver/cht_driver.mod.o ;  true
