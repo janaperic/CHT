@@ -202,11 +202,11 @@ static int cht_close(struct inode *i, struct file *f)
 	return 0;
 }
 
-static ssize_t cht_read(struct file *f, char __user *buf, size_t len, loff_t *off)
+static ssize_t cht_read(struct file *f, char __user *bu, size_t len, loff_t *off)
 {
 	int ret = 0;
 	printk("cht_read\n");
-	ret = copy_to_user(buf, FINISHED, len);
+	ret = copy_to_user(bu, FINISHED, len);
 	if(ret){
 		printk("Copy to user failed \n");
 		return -EFAULT;
@@ -358,6 +358,7 @@ u32 dma_simple_write(dma_addr_t TxBufferPtr, u32 max_pkt_len, void __iomem *base
 {
 	u32 MM2S_DMACR_reg;
 	printk(KERN_NOTICE "dma_simple_write: Writing pixels\n");
+	FINISHED[0] = 0;
 
 	//Reading the current configuration from MM2S_DMACR register
 	MM2S_DMACR_reg = ioread32(base_address); 
