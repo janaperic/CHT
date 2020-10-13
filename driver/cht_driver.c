@@ -30,7 +30,7 @@ MODULE_ALIAS("custom:cht ip core driver");
 
 unsigned int TX_PKT_LEN; //size of transmit data
 unsigned int RX_PKT_LEN; // size of receive data
-char FINISHED[1] = "";
+//char FINISHED[1] = "";
 
 //*******************FUNCTION PROTOTYPES************************************
 static int cht_probe(struct platform_device *pdev);
@@ -204,14 +204,14 @@ static int cht_close(struct inode *i, struct file *f)
 
 static ssize_t cht_read(struct file *f, char __user *bu, size_t len, loff_t *off)
 {
-	int ret = 0;
+	/*int ret = 0;
 	printk("cht_read\n");
 	ret = copy_to_user(bu, FINISHED, len);
 	if(ret){
 		printk("Copy to user failed \n");
 		return -EFAULT;
 	}  
-
+*/
 	return 0;
 }
 
@@ -320,7 +320,7 @@ static irqreturn_t dma_isr(int irq,void*dev_id)
 	printk(KERN_NOTICE "dma_isr: An interrupt has occured\n");
 
 	//Send the signal to the app that IP has finished
-	FINISHED[0] = 1;
+	//FINISHED[0] = 1;
 
 	/* Read pending interrupts */
 	IrqStatus = ioread32(vp->base_addr + 52);//Read irq status from S2MM_DMASR register
@@ -358,7 +358,7 @@ u32 dma_simple_write(dma_addr_t TxBufferPtr, u32 max_pkt_len, void __iomem *base
 {
 	u32 MM2S_DMACR_reg;
 	printk(KERN_NOTICE "dma_simple_write: Writing pixels\n");
-	FINISHED[0] = 0;
+	//FINISHED[0] = 0;
 
 	//Reading the current configuration from MM2S_DMACR register
 	MM2S_DMACR_reg = ioread32(base_address); 
