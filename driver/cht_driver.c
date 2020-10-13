@@ -30,7 +30,7 @@ MODULE_ALIAS("custom:cht ip core driver");
 
 unsigned int TX_PKT_LEN; //size of transmit data
 unsigned int RX_PKT_LEN; // size of receive data
-char FINISHED[1] = "0";
+char FINISHED[1];
 
 //*******************FUNCTION PROTOTYPES************************************
 static int cht_probe(struct platform_device *pdev);
@@ -204,8 +204,8 @@ static int cht_close(struct inode *i, struct file *f)
 
 static ssize_t cht_read(struct file *f, char __user *buf, size_t len, loff_t *off)
 {
-	printk("cht_read\n");
 	int ret = 0;
+	printk("cht_read\n");
 	ret = copy_to_user(FINISHED, buf, len);
 	if(ret){
 		printk("Copy to user failed \n");
