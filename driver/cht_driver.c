@@ -196,7 +196,10 @@ static int cht_open(struct inode *i, struct file *f)
 
 static int cht_close(struct inode *i, struct file *f)
 {
-	//printk("cht closed\n");
+	printk("cht_closed: Driver closed.\n");
+	dma_free_coherent(NULL, TX_PKT_LEN, tx_vir_buffer, tx_phy_buffer);
+	dma_free_coherent(NULL, RX_PKT_LEN, rx_vir_buffer, rx_phy_buffer);
+
 	return 0;
 }
 
@@ -232,8 +235,8 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 		TX_PKT_LEN = (numw + 1) * 4;
 		RX_PKT_LEN = numw * 360 * 4;
 
-		printk("cht write: TX_PKT_LEN = %d\n", TX_PKT_LEN);
-		printk("cht write: RX_PKT_LEN = %d\n", RX_PKT_LEN);
+		printk("cht_write: TX_PKT_LEN = %d\n", TX_PKT_LEN);
+		printk("cht_write: RX_PKT_LEN = %d\n", RX_PKT_LEN);
 
 		//Allocating memory for TX channel
 		tx_vir_buffer = dma_alloc_coherent(NULL, TX_PKT_LEN, &tx_phy_buffer, GFP_DMA | GFP_KERNEL);
