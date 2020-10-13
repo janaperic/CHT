@@ -156,8 +156,6 @@ static int cht_probe(struct platform_device *pdev)
 
 	/* INIT DMA */
 	dma_init(vp->base_addr);
-	//dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr); 
-	//dma_simple_read(rx_phy_buffer, RX_PKT_LEN, vp->base_addr);
 
 	printk(KERN_NOTICE "cht_probe: CHT platform driver registered\n");
 	return 0;
@@ -205,7 +203,7 @@ static int cht_close(struct inode *i, struct file *f)
 static ssize_t cht_read(struct file *f, char __user *buf, size_t len, loff_t *off)
 {
 	int ret = 0;
-	printk("cht_read\n");
+	printk(KERN_INFO "cht_read: Cheking if driver is ready to send pixels.\n");
 	ret = copy_to_user(buf, FINISHED, len);
 	if(ret){
 		printk("Copy to user failed \n");
@@ -355,7 +353,7 @@ u32 dma_simple_write(dma_addr_t TxBufferPtr, u32 max_pkt_len, void __iomem *base
 {
 	u32 MM2S_DMACR_reg;
 	printk(KERN_NOTICE "dma_simple_write: Writing pixels\n");
-	strcpy(FINISHED, "0");
+	strcpy(FINISHED, "0"); // Reset finish signal
 
 	//Reading the current configuration from MM2S_DMACR register
 	MM2S_DMACR_reg = ioread32(base_address); 
@@ -395,6 +393,8 @@ u32 dma_simple_read(dma_addr_t RxBufferPtr, u32 max_pkt_len, void __iomem *base_
 
 	//Send the signal to the app that IP has finished
 	strcpy(FINISHED, "1");
+	printk(KERN_NOTICE "dma_simple_read: Driver is ready to send pixels\n");
+
 	return 0;
 }
 
@@ -442,31 +442,8 @@ static int __init cht_init(void)
 	}
 	printk(KERN_INFO "cht_init: Module init done\n");
 
-	/*tx_vir_buffer = dma_alloc_coherent(NULL, TX_PKT_LEN, &tx_phy_buffer, GFP_DMA | GFP_KERNEL);
-	if(!tx_vir_buffer){
-		printk(KERN_ALERT "cht_init: Could not allocate dma_alloc_coherent for tx buffer");
-		goto fail_3;
-	}
-	else
-		printk("cht_init: Successfully allocated memory for dma transaction buffer\n");
-
-	rx_vir_buffer = dma_alloc_coherent(NULL, RX_PKT_LEN, &rx_phy_buffer, GFP_DMA | GFP_KERNEL);
-	if(!rx_vir_buffer){
-		printk(KERN_ALERT "cht_init: Could not allocate dma_alloc_coherent for rx buffer");
-		goto fail_3;
-	}
-	else
-		printk("cht_init: Successfully allocated memory for dma receive buffer\n");
-
-	for (i = 0; i < TX_PKT_LEN/4;i++)
-		tx_vir_buffer[i] = 0x00000000;
-	for (i = 0; i < RX_PKT_LEN/4;i++)
-		rx_vir_buffer[i] = 0x00000000;
-	printk(KERN_INFO "cht_init: DMA memory reset.\n");*/
 	return platform_driver_register(&cht_driver);
 
-//fail_3:
-	//cdev_del(my_cdev);
 fail_2:
 	device_destroy(my_class, MKDEV(MAJOR(my_dev_id),0));
 fail_1:

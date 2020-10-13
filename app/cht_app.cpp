@@ -264,17 +264,17 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int 
   //Notify the driver that pixels have been copied
   write(fd, start, sizeof(start));
 
-  while(finish == 0)
+  while(finish != 1) // Check if driver is ready to send pixels
   {
     read(fd, finish_s, sizeof(finish_s));
     sscanf(finish_s, "%d", &finish);
     cout << "finish = " << finish << endl;
   }
 
-  if(finish == 1)
+  if(finish == 1) // Driver is ready to send pixels
   {
     //Recieving the pixels
-    cout << "start reading the pixels!" << endl;
+    cout << "Start reading the pixels!" << endl;
     memcpy(rx_buff, rx, numw * 360 * 4);
 
     for(int i = 0; i < ((numw * 360) - 1); i++)
