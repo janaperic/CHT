@@ -274,7 +274,7 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int 
     cout << "finish = " << finish << endl;
   }
 
-  if(finnish == 1)
+  if(finish == 1)
   {
     //Recieving the pixels
     cout << "start reading the pixels!" << endl;

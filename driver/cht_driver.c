@@ -202,11 +202,11 @@ static int cht_close(struct inode *i, struct file *f)
 	return 0;
 }
 
-static ssize_t cht_read(struct file *f, char __user *bu, size_t len, loff_t *off)
+static ssize_t cht_read(struct file *f, char __user *buf, size_t len, loff_t *off)
 {
 	int ret = 0;
 	printk("cht_read\n");
-	ret = copy_to_user(bu, FINISHED, len);
+	ret = copy_to_user(buf, FINISHED, len);
 	if(ret){
 		printk("Copy to user failed \n");
 		return -EFAULT;
@@ -319,9 +319,6 @@ static irqreturn_t dma_isr(int irq,void*dev_id)
 	u32 IrqStatus;  
 	printk(KERN_NOTICE "dma_isr: An interrupt has occured\n");
 
-	//Send the signal to the app that IP has finished
-	FINISHED[0] = 1;
-
 	/* Read pending interrupts */
 	IrqStatus = ioread32(vp->base_addr + 52);//Read irq status from S2MM_DMASR register
 	iowrite32(IrqStatus | 0x00007000, vp->base_addr + 52);//Clear irq status in S2MM_DMASR register
@@ -395,6 +392,9 @@ u32 dma_simple_read(dma_addr_t RxBufferPtr, u32 max_pkt_len, void __iomem *base_
 
 	//Setting the S2MM_LENGTH register
 	iowrite32(max_pkt_len, base_address + 88); 
+	
+	//Send the signal to the app that IP has finished
+	FINISHED[0] = 1;
 	return 0;
 }
 
