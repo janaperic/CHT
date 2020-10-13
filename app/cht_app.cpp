@@ -254,6 +254,8 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int 
   tx_buff[0] = r | (1 << 31);
 
   char start[5] = "1"; 
+  char finish_s[1] = "";
+  int finish = 0;
 
   //With memcpy() we are copying the values of numw bytes from the location 
   //pointed to by tx_buff directly to the memory block pointed to by p.
@@ -261,23 +263,29 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int 
 
   //Notify the driver that pixels have been copied
   write(fd, start, sizeof(start));
-  //Recieving the pixels
-  memcpy(rx_buff, rx, numw * 360 * 4);
 
-  for(int i = 0; i < ((numw * 360) - 1); i++)
+  read(fd, finish_s, sizeof(finish_s));
+  sscanf(finish_s, "%d", &finish);
+  if(finish == 1)
   {
-    a = rx_buff[i] & 0x3FF; // first 10 bits
-    b = (rx_buff[i] & 0xFFC00) >> 10; // second 10 bits
-    //if(i < 20)
-     // cout << "rx_buff = " << rx_buff[i] << endl;
-    if(a < width && b < height && !(rx_buff[i] & (1 << 31)))
+    //Recieving the pixels
+    memcpy(rx_buff, rx, numw * 360 * 4);
+
+    for(int i = 0; i < ((numw * 360) - 1); i++)
     {
-      acc.at<int>(b,a) += 1;
+      a = rx_buff[i] & 0x3FF; // first 10 bits
+      b = (rx_buff[i] & 0xFFC00) >> 10; // second 10 bits
+      //if(i < 20)
+       // cout << "rx_buff = " << rx_buff[i] << endl;
+      if(a < width && b < height && !(rx_buff[i] & (1 << 31)))
+      {
+        acc.at<int>(b,a) += 1;
+      }
     }
+
+    cout << "Finished accumulator matrix for r = " << r << endl;
+
+    return acc;
   }
-
-  cout << "Finished accumulator matrix for r = " << r << endl;
-
-  return acc;
 }
 

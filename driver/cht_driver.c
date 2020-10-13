@@ -30,6 +30,7 @@ MODULE_ALIAS("custom:cht ip core driver");
 
 unsigned int TX_PKT_LEN; //size of transmit data
 unsigned int RX_PKT_LEN; // size of receive data
+char FINISHED[1] = "0";
 
 //*******************FUNCTION PROTOTYPES************************************
 static int cht_probe(struct platform_device *pdev);
@@ -203,13 +204,20 @@ static int cht_close(struct inode *i, struct file *f)
 
 static ssize_t cht_read(struct file *f, char __user *buf, size_t len, loff_t *off)
 {
-	//printk("cht read\n");
+	printk("cht_read\n");
+	int ret = 0;
+	ret = copy_to_user(FINISHED, buf, len);
+	if(ret){
+		printk("Copy to user failed \n");
+		return -EFAULT;
+	}  
+
 	return 0;
 }
 
 static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, loff_t *off)
 {	
-	char buff[100] = "";
+	char buff[5] = "";
 	int ret = 0;
 	int numw = 0;
 	int i = 0;
@@ -233,33 +241,33 @@ static ssize_t cht_write(struct file *f, const char __user *buf, size_t length, 
 		tx_vir_buffer = dma_alloc_coherent(NULL, TX_PKT_LEN, &tx_phy_buffer, GFP_DMA | GFP_KERNEL);
 		if(!tx_vir_buffer)
 		{
-			printk(KERN_ALERT "cht_init: Could not allocate memory for TX buffer");
+			printk(KERN_ALERT "cht_write: Could not allocate memory for TX buffer");
 			return -1;
 		}
 		else
-			printk("cht_init: Successfully allocated memory for DMA TX buffer\n");
+			printk("cht_write: Successfully allocated memory for DMA TX buffer\n");
 
 		//Allocating memory for RX channel
 		rx_vir_buffer = dma_alloc_coherent(NULL, RX_PKT_LEN, &rx_phy_buffer, GFP_DMA | GFP_KERNEL);
 		if(!rx_vir_buffer)
 		{
-			printk(KERN_ALERT "cht_init: Could not allocate memory for RX buffer");
+			printk(KERN_ALERT "cht_write: Could not allocate memory for RX buffer");
 			return -1;
 		}
 		else
-			printk("cht_init: Successfully allocated memory for DMA RX buffer\n");
+			printk("cht_write: Successfully allocated memory for DMA RX buffer\n");
 
 		//Resetting buffers
 		for (i = 0; i < TX_PKT_LEN/4;i++)
 			tx_vir_buffer[i] = 0x00000000;
 		for (i = 0; i < RX_PKT_LEN/4;i++)
 			rx_vir_buffer[i] = 0x00000000;
-		printk(KERN_INFO "cht_init: DMA memory reset.\n");
+		printk(KERN_INFO "cht_write: DMA memory reset.\n");
 	}
 	else //When numw is 1, it's the signal to start the first transaction
 	{
-		printk("cht write: Start the transaction\n");
-		printk("tx_vir_buffer[31] = %d\n", tx_vir_buffer[31]);
+		printk("cht_write: Start the transaction\n");
+		//printk("tx_vir_buffer[31] = %d\n", tx_vir_buffer[31]);
 		dma_simple_write(tx_phy_buffer, TX_PKT_LEN, vp->base_addr);
 	}
 
@@ -310,6 +318,10 @@ static irqreturn_t dma_isr(int irq,void*dev_id)
 {
 	u32 IrqStatus;  
 	printk(KERN_NOTICE "dma_isr: An interrupt has occured\n");
+
+	//Send the signal to the app that IP has finished
+	FINISHED[0] = "1";
+
 	/* Read pending interrupts */
 	IrqStatus = ioread32(vp->base_addr + 52);//Read irq status from S2MM_DMASR register
 	iowrite32(IrqStatus | 0x00007000, vp->base_addr + 52);//Clear irq status in S2MM_DMASR register
@@ -461,7 +473,6 @@ fail_1:
 fail_0:
 	unregister_chrdev_region(my_dev_id, 1);
 	return -1;
-	return 0;
 
 } 
 
