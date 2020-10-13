@@ -266,6 +266,7 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int 
 
   read(fd, finish_s, sizeof(finish_s));
   sscanf(finish_s, "%d", &finish);
+  cout << "finish = " << finish << endl;
   if(finish == 1)
   {
     //Recieving the pixels
