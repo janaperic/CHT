@@ -30,7 +30,7 @@ MODULE_ALIAS("custom:cht ip core driver");
 
 unsigned int TX_PKT_LEN; //size of transmit data
 unsigned int RX_PKT_LEN; // size of receive data
-char FINISHED[5] = "";
+char FINISHED[5] = "0";
 
 //*******************FUNCTION PROTOTYPES************************************
 static int cht_probe(struct platform_device *pdev);
@@ -355,7 +355,7 @@ u32 dma_simple_write(dma_addr_t TxBufferPtr, u32 max_pkt_len, void __iomem *base
 {
 	u32 MM2S_DMACR_reg;
 	printk(KERN_NOTICE "dma_simple_write: Writing pixels\n");
-	FINISHED[0] = 1;
+	strcpy(FINISHED, "0");
 
 	//Reading the current configuration from MM2S_DMACR register
 	MM2S_DMACR_reg = ioread32(base_address); 
@@ -394,7 +394,7 @@ u32 dma_simple_read(dma_addr_t RxBufferPtr, u32 max_pkt_len, void __iomem *base_
 	iowrite32(max_pkt_len, base_address + 88); 
 
 	//Send the signal to the app that IP has finished
-	FINISHED[0] = 1;
+	strcpy(FINISHED, "1");
 	return 0;
 }
 
