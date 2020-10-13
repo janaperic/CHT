@@ -261,7 +261,6 @@ Mat CalcAccumulator(Mat matrix, unsigned int r, int *tx, int *rx, int numw, int 
 
   //Notify the driver that pixels have been copied
   write(fd, start, sizeof(start));
-  sleep(1);
   //Recieving the pixels
   memcpy(rx_buff, rx, numw * 360 * 4);
 
