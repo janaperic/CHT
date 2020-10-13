@@ -206,7 +206,7 @@ static ssize_t cht_read(struct file *f, char __user *buf, size_t len, loff_t *of
 {
 	int ret = 0;
 	printk("cht_read\n");
-	ret = copy_to_user(FINISHED, buf, len);
+	ret = copy_to_user(buf, FINISHED, len);
 	if(ret){
 		printk("Copy to user failed \n");
 		return -EFAULT;
