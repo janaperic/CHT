@@ -30,7 +30,7 @@ MODULE_ALIAS("custom:cht ip core driver");
 
 unsigned int TX_PKT_LEN; //size of transmit data
 unsigned int RX_PKT_LEN; // size of receive data
-char FINISHED[1];
+char FINISHED[1] = "";
 
 //*******************FUNCTION PROTOTYPES************************************
 static int cht_probe(struct platform_device *pdev);
