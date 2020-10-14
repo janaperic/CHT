@@ -455,9 +455,9 @@ fail_0:
 
 } 
 
+// Exit Device Module
 static void __exit cht_exit(void)  		
 {
-	// Exit Device Module
 	platform_driver_unregister(&cht_driver);
 	cdev_del(my_cdev);
 	device_destroy(my_class, MKDEV(MAJOR(my_dev_id),0));
