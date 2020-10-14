@@ -454,22 +454,12 @@ fail_0:
 
 static void __exit cht_exit(void)  		
 {
-	//Reset DMA 
-	int i =0;
-	for (i = 0; i < TX_PKT_LEN/4; i++) 
-		tx_vir_buffer[i] = 0x00000000;
-	for (i = 0; i < RX_PKT_LEN/4;i++)
-		rx_vir_buffer[i] = 0x00000000;
-	printk(KERN_INFO "cht_exit: DMA memory reset\n");
-
 	// Exit Device Module
 	platform_driver_unregister(&cht_driver);
 	cdev_del(my_cdev);
 	device_destroy(my_class, MKDEV(MAJOR(my_dev_id),0));
 	class_destroy(my_class);
 	unregister_chrdev_region(my_dev_id, 1);
-	dma_free_coherent(NULL, TX_PKT_LEN, tx_vir_buffer, tx_phy_buffer);
-	dma_free_coherent(NULL, RX_PKT_LEN, rx_vir_buffer, rx_phy_buffer);
 	printk(KERN_INFO "cht_exit: Exit device module finished\"%s\".\n", DEVICE_NAME);
 }
 
