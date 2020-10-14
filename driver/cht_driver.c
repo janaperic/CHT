@@ -324,6 +324,9 @@ static irqreturn_t dma_isr(int irq,void*dev_id)
 	IrqStatus = ioread32(vp->base_addr + 52);//Read irq status from S2MM_DMASR register
 	iowrite32(IrqStatus | 0x00007000, vp->base_addr + 52);//Clear irq status in S2MM_DMASR register
 
+	//Send the signal to the app that IP has finished
+	strcpy(FINISHED, "1");
+	printk(KERN_NOTICE "dma_simple_read: Driver is ready to send pixels\n");
 	return IRQ_HANDLED;
 }
 
@@ -392,10 +395,6 @@ u32 dma_simple_read(dma_addr_t RxBufferPtr, u32 max_pkt_len, void __iomem *base_
 
 	//Setting the S2MM_LENGTH register
 	iowrite32(max_pkt_len, base_address + 88); 
-
-	//Send the signal to the app that IP has finished
-	strcpy(FINISHED, "1");
-	printk(KERN_NOTICE "dma_simple_read: Driver is ready to send pixels\n");
 
 	return 0;
 }
